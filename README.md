@@ -1,2 +1,2 @@
 # BlackJack
-This is my Blackjack project for AP Compsci
+This is my Blackjack game project for AP Compsci
