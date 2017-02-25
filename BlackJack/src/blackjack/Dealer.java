@@ -12,6 +12,7 @@ package blackjack;
 public class Dealer {
     private Hand hand = new Hand();
     public Hand getHand() { return hand; }
+    public void resetHand() { hand = new Hand(); }
     
     public Dealer() {
         

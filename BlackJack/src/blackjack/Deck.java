@@ -13,22 +13,22 @@ public class Deck {
     private ArrayList<Card> cards = new ArrayList<Card>();
     public Deck() {
         int val;
-        for(int i = 1; i <= 14; i++) {
+        for(int i = 1; i <= 13; i++) {
             val = i;
-            if(i > 10) val = 10;
+            if(val > 10) val = 10;
             for(int j = 0; j < 4; j++) {
                 switch(j) {
                     case 0:
-                        cards.add(new Card(val, Suit.hearts));
+                        cards.add(new Card(val, i, Suit.hearts));
                         break;
                     case 1:
-                        cards.add(new Card(val, Suit.diamonds));
+                        cards.add(new Card(val, i, Suit.diamonds));
                         break;
                     case 2:
-                        cards.add(new Card(val, Suit.spades));
+                        cards.add(new Card(val, i, Suit.spades));
                         break;
                     case 3:
-                        cards.add(new Card(val, Suit.clubs));
+                        cards.add(new Card(val, i, Suit.clubs));
                         break;
                 };
             }
