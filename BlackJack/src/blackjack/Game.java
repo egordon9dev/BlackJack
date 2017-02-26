@@ -35,7 +35,7 @@ public class Game {
             dealer.resetHand();
             System.out.println("Account: $" + player.getMoney());
             System.out.println("How much would you like to bet?");
-            double bet = 0;
+            double bet = 0.0;
             while(true) {
                 try{
                     bet = Double.parseDouble(scan.next());
@@ -58,6 +58,7 @@ public class Game {
             boolean playerDidStuff = true;
             boolean dealerDidStuff = true;
             boolean standing = false;
+            double insBet = 0.0;
             while(playerDidStuff || dealerDidStuff) {
                 Hand playerHand = player.getHand();
                 Hand dealerHand = dealer.getHand();
@@ -87,20 +88,41 @@ public class Game {
                     System.out.println("player has a blackjack!");
                     break;
                 }
-                //dealer blackjack
-                if(dealerHand.isBlackjack()) {
-                    System.out.println("dealer has a blackjack!");
-                    break;
-                }
 
                 in = -1;
                 //System.out.println("player: " + player.getHand().getVal());
                 //System.out.println("dealer: " + dealer.getHand().getVal());
 
-                System.out.println("player: "  + player.getHand());
-                System.out.println("dealer: " + dealer.getHand());
+                System.out.println("player: "  + player);
+                System.out.println("dealer: " + dealer);
                 
-                System.out.println("1: HIT\t2: Double\t3:STAND");
+                if(insBet > -0.000001 && insBet < 0.000001 && dealerHand.getCards().get(1).getID() == 1) {
+                    System.out.println("would you like to make an insurance bet? (y/n)");
+                    String s = scan.next();
+                    if(s.equalsIgnoreCase("y")) {
+                        double max = bet/2.0 < player.getMoney() ? bet/2.0 : player.getMoney();
+                        System.out.println("how much would you like to bet? (max: " + max +")");
+                        while(true) {
+                            try {
+                                insBet = Double.parseDouble(scan.next());
+                                if(insBet > max || insBet < 0.0) {
+                                    System.out.println("invalid entry, try again");
+                                    continue;
+                                }
+                                break;
+                            } catch (Exception e) { }
+                        }
+                        player.bet(insBet);
+                    }
+                }
+                
+                //dealer blackjack
+                if(dealerHand.isBlackjack()) {
+                    System.out.println("dealer has a blackjack!");
+                    break;
+                }
+                
+                System.out.println("1: HIT\t2: DOUBLE\t3: STAND");
                 if(standing) in = 3;
                 else {
                     while(true){
@@ -122,7 +144,7 @@ public class Game {
                         standing = true;
                     case 1:
                         Card c = shoe.drawCard();
-                        System.out.println("player drawing a " + c);
+                        //System.out.println("player drawing a " + c);
                         player.getHand().drawCard(c);
                         playerDidStuff = true;
                         break;
@@ -130,10 +152,11 @@ public class Game {
                         playerDidStuff = false;
                         standing = true;
                         break;
+                        
                 }
-                if(dealer.getHand().getVal() <= 17) {
+                if(dealer.getHand().getVal() <= 16) {
                     Card c = shoe.drawCard();
-                    System.out.println("dealer drawing a " + c);
+                    //System.out.println("dealer drawing a " + c);
                     dealer.getHand().drawCard(c);
                     dealerDidStuff = true;
                 } else {
@@ -145,7 +168,8 @@ public class Game {
 
             Hand pHand = player.getHand();
             Hand dHand = dealer.getHand();
-
+            
+            if(dHand.isBlackjack()) player.earn(2*insBet);
             
             if(!player.getHand().isBust() && !dealer.getHand().isBust()) {
                 if(pHand.isBlackjack() || pHand.isCharlie()) {
@@ -167,10 +191,15 @@ public class Game {
                     player.earn(bet);
                 }
             }
-            System.out.println("\n\nagain?");
-            if(scan.next().equals("y")) repeat = true;
+            String strRep = "";
+            while(!strRep.equalsIgnoreCase("y") && !strRep.equalsIgnoreCase("n")) {
+                System.out.print("\nagain? (y/n)");
+                strRep = scan.next();
+            }
+            if(strRep.equalsIgnoreCase("y")) repeat = true;
             else repeat = false;
         }
-        System.out.println("You've gone bankrupt!\nGAMEOVER");
+        if(repeat) System.out.println("You've gone bankrupt!");
+        System.out.println("GAMEOVER");
     }
 }

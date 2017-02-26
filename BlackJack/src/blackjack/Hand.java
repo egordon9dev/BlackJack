@@ -11,6 +11,7 @@ import java.util.ArrayList;
  */
 public class Hand {
     private ArrayList<Card> cards = new ArrayList<Card>();
+    public ArrayList<Card> getCards() { return cards; }
     private boolean bust = false;
     private boolean charlie = false;
     private boolean blackjack = false;

@@ -24,4 +24,8 @@ public class Player {
         this.money = money;
     }
     
+    @Override
+    public String toString() {
+        return hand.toString();
+    }
 }

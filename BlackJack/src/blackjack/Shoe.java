@@ -36,7 +36,10 @@ public class Shoe {
     public ArrayList<Card> getCards() { return cards; }
     
     public Card drawCard() {
-        if(cards.size() < 52) refill();
+        if(cards.size() < 52 * (NUM_OF_DECKS-1)) {
+            refill();
+            shuffle();
+        }
         int n = cards.size() - 1;
         Card c = cards.get(n);
         cards.remove(n);

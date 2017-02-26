@@ -25,6 +25,7 @@ public class Card {
     }
     public int getVal() { return val; }
     public Suit getSuit() { return suit; }
+    public int getID() { return id; }
     @Override
     public String toString() {
         String s = "";

@@ -17,4 +17,9 @@ public class Dealer {
     public Dealer() {
         
     }
+    @Override
+    public String toString() {
+        String s = hand.toString();
+        return "??????" + s.substring(s.indexOf('\t'));
+    }
 }
