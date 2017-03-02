@@ -11,8 +11,15 @@ package blackjack;
  */
 public class Dealer {
     private Hand hand = new Hand();
+    private boolean active = true;
     public Hand getHand() { return hand; }
     public void resetHand() { hand = new Hand(); }
+    public void reset() {
+        resetHand();
+        active = true;
+    }
+    public boolean isActive() { return active; }
+    public void setActive(boolean b) { active = b; }
     
     public Dealer() {
         

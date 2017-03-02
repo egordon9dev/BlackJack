@@ -46,7 +46,7 @@ public class Game {
                     break;
                 } catch(Exception e) {}
             }
-            player.bet(bet);
+            player.betMoney(bet);
             
             player.getHand().drawCard(shoe.drawCard());
             player.getHand().drawCard(shoe.drawCard());
@@ -112,7 +112,7 @@ public class Game {
                                 break;
                             } catch (Exception e) { }
                         }
-                        player.bet(insBet);
+                        player.betMoney(insBet);
                     }
                 }
                 
@@ -139,7 +139,7 @@ public class Game {
                 
                 switch(in) {
                     case 2:
-                        player.bet(bet);
+                        player.betMoney(bet);
                         bet*=2.0;
                         standing = true;
                     case 1:
