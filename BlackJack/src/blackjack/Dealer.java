@@ -5,7 +5,7 @@
  */
 package blackjack;
 
-/**
+/*
  *
  * @author ethan
  */

@@ -4,45 +4,47 @@
  * and open the template in the editor.
  */
 package blackjack;
-
+import java.util.ArrayList;
 /**
  *
  * @author ethan
  */
-public class Player {
-    private boolean active = true;
-    private boolean standing = false;
-    private double money = 0;
-    private double bet = 0;
-    public boolean isActive() { return active; }
-    public void setActive(boolean b) { active = b; }
-    public double getBet() { return bet; }
-    public void setBet(double bet) { this.bet = bet; }
-    public void doubleDown() {
-        betMoney(bet);
-        bet *= 2;
-    }
-    public boolean isStanding() { return standing; }
-    public void setStanding(boolean b) { standing = b; }
-    public void betMoney(double bet) { money -= bet; }
-    public void earn(double earnings) { money += earnings; }
+public class Player{
+    private double money = 0.0;
+    private double bet = 0.0;
+    private double insBet = 0.0;
+    private int focusedPlayer = 0;
     public double getMoney() { return money; }
     public void setMoney(double money) { this.money = money; }
+    public double getBet() { return bet; }
+    public void setBet(double bet) { this.bet = bet; }
+    public double getInsBet() { return insBet; }
+    public void setInsBet(double insBet) { this.insBet = insBet; }
+    public int getFocusedPlayer() { return focusedPlayer; }
+    public void incFocusedPlayer() {
+        focusedPlayer++;
+        if(focusedPlayer >= players.size()) focusedPlayer = 0;
+    }
+    public void earn(double earnings) { money += earnings; }
+    public void betMoney(double n) { money -= n; }
+    ArrayList<PartialPlayer> players = new ArrayList<PartialPlayer>();
+    public ArrayList<PartialPlayer> getPlayers() { return players; }
     
-    private Hand hand = new Hand();
-    public Hand getHand() { return hand; }
-    public void resetHand() { hand = new Hand(); }
+    public boolean isActive() {
+        for(PartialPlayer p : players) {
+            if(p.isActive()) return true;
+        }
+        return false;
+    }
     public void reset() {
-        resetHand();
-        standing = false;
-        active = true;
+        bet= 0.0;
+        insBet = 0.0;
+        focusedPlayer = 0;
+        players = new ArrayList<PartialPlayer>();
+        players.add(new PartialPlayer());
     }
     public Player(double money) {
         this.money = money;
-    }
-    
-    @Override
-    public String toString() {
-        return hand.toString();
+        players.add(new PartialPlayer());
     }
 }

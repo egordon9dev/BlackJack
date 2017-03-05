@@ -12,9 +12,12 @@ import java.util.ArrayList;
 public class Hand {
     private ArrayList<Card> cards = new ArrayList<Card>();
     public ArrayList<Card> getCards() { return cards; }
+    public void setCards(ArrayList<Card> cards) { this.cards = cards; }
     private boolean bust = false;
     private boolean charlie = false;
     private boolean blackjack = false;
+    private boolean splitable = false;
+    public boolean isSplitable() { return splitable; }
     public boolean isBust() { return bust; }
     public boolean isCharlie() { return charlie; }
     public boolean isBlackjack() { return blackjack; }
@@ -36,12 +39,15 @@ public class Hand {
         cards.add(c);
         if(getVal() > 21) bust = true;
         if(cards.size() >= 5) charlie = true;
-        if( (cards.size() == 2) &&
-            (  (cards.get(0).getVal() == 10 && cards.get(1).getVal() == 1) ||
-               (cards.get(0).getVal() == 1 && cards.get(1).getVal() == 10)
-            )
-          )     {
-            blackjack = true;
+        splitable = false;
+        if(cards.size() == 2) {
+            Card card0 = cards.get(0);
+            Card card1 = cards.get(1);
+            if((card0.getVal() == 10 && card1.getVal() == 1) ||
+               (card0.getVal() == 1 && card1.getVal() == 10)) {
+                blackjack = true;
+            }
+            if(card0.getVal() == card1.getVal()) splitable = true;
         }
                 
     }
@@ -53,8 +59,8 @@ public class Hand {
     @Override
     public String toString() {
         String s = "";
-        for(Card i : cards) {
-            s += i + "\t";
+        for(int i = 0; i < cards.size(); i++) {
+            s += cards.get(i) + "\t";
         }
         return s;
     }
