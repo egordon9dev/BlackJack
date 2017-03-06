@@ -8,12 +8,20 @@ import java.util.ArrayList;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 /**
  *
  * @author ethan
  */
 public class GameGUI {
+    public static BufferedImage cardSheet;
+    private static ArrayList<ArrayList<BufferedImage>> playerCardClips;
+    private static ArrayList<ArrayList<BufferedImage>> dealerCardClips;
+    private static JLabel labelPlayerCards, labelDealerCards;
     private static JTextField textMoney, textBet, textIns, textDealer;
     private static JTextArea textPlayer;
     private static JLabel labelMoney, labelBet, labelIns, labelSplit, labelDealer, labelPlayer;
@@ -98,7 +106,7 @@ public class GameGUI {
         labelDealer = new JLabel("Dealer: ");
         //SubPanel center = new SubPanel();
         //center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
-        Box box = Box.createVerticalBox();
+        Box centerBox = Box.createVerticalBox();
         SubPanel c1 = new SubPanel(new FlowLayout());
         c1.add(labelPlayer);
         c1.add(textPlayer);
@@ -108,11 +116,11 @@ public class GameGUI {
         c2.add(textDealer);
         c2.setBackground(MainPanel.color);
         c2.setPreferredSize(new Dimension(200, 20));
-        box.add(Box.createVerticalStrut(220));
-        box.add(c1);
-        box.add(c2);
-        box.add(Box.createVerticalStrut(220));
-        panel.add(box, BorderLayout.CENTER);
+        centerBox.add(Box.createVerticalStrut(220));
+        centerBox.add(c1);
+        centerBox.add(c2);
+        centerBox.add(Box.createVerticalStrut(220));
+        //panel.add(box, BorderLayout.CENTER);
         
         
         butHit = new JButton("HIT");
@@ -214,7 +222,22 @@ public class GameGUI {
         butAgain.setBorder(BorderFactory.createLineBorder(new Color(51, 140, 37), 1)); 
         butAgain.setPreferredSize(new Dimension(100, 50));
         panel.add(butAgain, BorderLayout.EAST);
+
+        playerCardClips = new ArrayList<ArrayList<BufferedImage>>();
+        dealerCardClips = new ArrayList<ArrayList<BufferedImage>>();
+        try {
+            cardSheet = ImageIO.read(new File("playingCards2.png"));
+        } catch(IOException e) {}
         
+        labelPlayerCards = new JLabel();
+        labelDealerCards = new JLabel();
+        Box westBox = Box.createHorizontalBox();
+        westBox.add(labelPlayer);
+        westBox.add(labelPlayerCards);
+        westBox.add(Box.createHorizontalStrut(200));
+        westBox.add(labelDealer);
+        westBox.add(labelDealerCards);
+        panel.add(westBox, BorderLayout.WEST);
         
         frame.add(panel);
         frame.setSize(800, 650);
@@ -233,9 +256,46 @@ public class GameGUI {
         });
     }
     
+    public static BufferedImage joinCards(ArrayList<ArrayList<BufferedImage>> imgs) {
+        //trim list
+        for(int i = imgs.size()-1; i >= 0; i--) {
+            if(imgs.get(i).size() <= 0) imgs.remove(i);
+        }
+        //find dimensions
+        int w = 0, h = imgs.size();
+        for(ArrayList<BufferedImage> i : imgs) {
+            if(i.size() > w) w = i.size();
+        }
+        int totalW = imgs.get(0).get(0).getWidth() * w;
+        int totalH = imgs.get(0).get(0).getHeight() * h;
+        //create new image
+        BufferedImage newImage = new BufferedImage(totalW, totalH, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = newImage.createGraphics();
+        Color oldColor = g2.getColor();
+        g2.setColor(oldColor);
+        for(int y = 0; y < imgs.size(); y++) {
+            for(int x = 0; x < imgs.get(y).size(); x++) {
+                BufferedImage image;
+                image = imgs.get(y).get(x);
+                g2.drawImage(image, null, imgs.get(0).get(0).getWidth()*x, imgs.get(0).get(0).getHeight()*y);
+            }
+        }
+        g2.dispose();
+        return newImage;
+    }
+    
     public static void main(String args[]) {
         setupGUI();
-        
+        /*
+        BufferedImage clip = cardSheet.getSubimage(44, 0, 44, 63);
+        cardClips.add(new ArrayList<BufferedImage>());
+        cardClips.add(new ArrayList<BufferedImage>());
+        cardClips.add(new ArrayList<BufferedImage>());
+        for(int i = 0; i < cardClips.size(); i++) {
+            for(int j = 0; j < i; j++) cardClips.get(i).add(clip);
+        }
+        labelCard.setIcon(new ImageIcon(joinCards(cardClips)));
+        */
         double playerMoney = 10000;
         player = new Player(playerMoney);
         ArrayList<PartialPlayer> players;
@@ -273,8 +333,9 @@ public class GameGUI {
                 p0.getHand().drawCard(shoe.drawCard());
                 dealer.getHand().drawCard(shoe.drawCard());
                 dealer.getHand().drawCard(shoe.drawCard());
-
+                
                 while(player.isActive() || dealer.isActive()) {
+                    
                     for(int i = 0; i < players.size(); i++) {
                         PartialPlayer p = players.get(i);  
                         if(p.isStanding()) p.setActive(false);
@@ -308,13 +369,18 @@ public class GameGUI {
                     //System.out.println("dealer: " + dealer.getHand().getVal());
                     String strPlayer = "";
                     for(int i = 0; i < players.size(); i++) {
-                        strPlayer += "player "+i+": "  + players.get(i).toString() + "\n";
+                        strPlayer += players.get(i).toString() + "\n";
                     }
                     System.out.println(strPlayer);
                     System.out.println("dealer: " + dealer);
                     textPlayer.setText(strPlayer);
                     textDealer.setText(dealer.toString());
-
+                    playerCardClips = player.createCardClips();
+                    dealerCardClips = new ArrayList<ArrayList<BufferedImage>>();
+                    dealerCardClips.add(dealer.createCardClips());
+                    labelPlayerCards.setIcon(new ImageIcon(joinCards(playerCardClips)));
+                    labelDealerCards.setIcon(new ImageIcon(joinCards(dealerCardClips)));
+                    
                     //insurance bet input
                     if(player.getInsBet() > -0.000001 && player.getInsBet() < 0.000001
                             && dealerHand.getCards().get(1).getID() == 1) {
@@ -371,7 +437,7 @@ public class GameGUI {
                 }
                 String strPlayer = "";
                 for(int i = 0; i < players.size(); i++) {
-                    strPlayer += "player "+i+": "  + players.get(i).toString() + "\n";
+                    strPlayer += players.get(i).toString() + "\n";
                 }
                 System.out.println(strPlayer);
                 System.out.println("dealer: " + dealer.getHand());

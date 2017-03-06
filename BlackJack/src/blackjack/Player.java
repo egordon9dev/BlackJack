@@ -5,6 +5,7 @@
  */
 package blackjack;
 import java.util.ArrayList;
+import java.awt.image.BufferedImage;
 /**
  *
  * @author ethan
@@ -46,5 +47,16 @@ public class Player{
     public Player(double money) {
         this.money = money;
         players.add(new PartialPlayer());
+    }
+    public ArrayList<ArrayList<BufferedImage>> createCardClips() {
+        ArrayList<ArrayList<BufferedImage>> imgs = new ArrayList<ArrayList<BufferedImage>>();
+        for(int i = 0; i < players.size(); i++) {
+            imgs.add(new ArrayList<BufferedImage>());
+            ArrayList<Card> cards = players.get(i).getHand().getCards();
+            for(int j = 0; j < cards.size(); j++) {
+                imgs.get(i).add(GameGUI.cardSheet.getSubimage((cards.get(j).getID()-1)*44, 0, 44, 63));
+            }
+        }
+        return imgs;
     }
 }
