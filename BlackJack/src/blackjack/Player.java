@@ -20,7 +20,7 @@ public class Player{
     public double getBet() { return bet; }
     public void setBet(double bet) { this.bet = bet; }
     public double getInsBet() { return insBet; }
-    public void setInsBet(double insBet) { this.insBet = insBet; }
+    public void setInsBet(double n) { insBet = n; }
     public int getFocusedPlayer() { return focusedPlayer; }
     public void incFocusedPlayer() {
         focusedPlayer++;
@@ -30,7 +30,12 @@ public class Player{
     public void betMoney(double n) { money -= n; }
     ArrayList<PartialPlayer> players = new ArrayList<PartialPlayer>();
     public ArrayList<PartialPlayer> getPlayers() { return players; }
-    
+    public boolean isBust() {
+        for(PartialPlayer p : players) {
+            if(!p.getHand().isBust()) return false;
+        }
+        return true;
+    }
     public boolean isActive() {
         for(PartialPlayer p : players) {
             if(p.isActive()) return true;
@@ -54,7 +59,22 @@ public class Player{
             imgs.add(new ArrayList<BufferedImage>());
             ArrayList<Card> cards = players.get(i).getHand().getCards();
             for(int j = 0; j < cards.size(); j++) {
-                imgs.get(i).add(GameGUI.cardSheet.getSubimage((cards.get(j).getID()-1)*44, 0, 44, 63));
+                int n = -1;
+                switch(cards.get(j).getSuit()) {
+                    case hearts:
+                        n = 0;
+                        break;
+                    case diamonds:
+                        n = 1;
+                        break;
+                    case clubs:
+                        n = 2;
+                        break;
+                    case spades:
+                        n = 3;
+                        break;
+                }
+                imgs.get(i).add(GameGUI.cardSheet.getSubimage((cards.get(j).getID()-1)*44, n*63, 44, 63));
             }
         }
         return imgs;

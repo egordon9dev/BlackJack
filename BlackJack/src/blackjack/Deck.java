@@ -19,16 +19,16 @@ public class Deck {
             for(int j = 0; j < 4; j++) {
                 switch(j) {
                     case 0:
-                        cards.add(new Card(val, i, Suit.hearts));
+                        cards.add(new Card(10, 13, Suit.hearts));
                         break;
                     case 1:
-                        cards.add(new Card(val, i, Suit.diamonds));
+                        cards.add(new Card(1, 1, Suit.diamonds));
                         break;
                     case 2:
-                        cards.add(new Card(val, i, Suit.spades));
+                        cards.add(new Card(1, 1, Suit.spades));
                         break;
                     case 3:
-                        cards.add(new Card(val, i, Suit.clubs));
+                        cards.add(new Card(1, 1, Suit.clubs));
                         break;
                 };
             }

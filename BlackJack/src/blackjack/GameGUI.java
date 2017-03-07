@@ -234,7 +234,7 @@ public class GameGUI {
         Box westBox = Box.createHorizontalBox();
         westBox.add(labelPlayer);
         westBox.add(labelPlayerCards);
-        westBox.add(Box.createHorizontalStrut(200));
+        westBox.add(Box.createHorizontalStrut(100));
         westBox.add(labelDealer);
         westBox.add(labelDealerCards);
         panel.add(westBox, BorderLayout.WEST);
@@ -359,12 +359,15 @@ public class GameGUI {
                         System.out.println("dealer bust");
                         break;
                     }
+                    if(players.get(0).getHand().isBlackjack() && players.size() == 1) {
+                        break;
+                    }
                     //dealer charlie
                     if(dealerHand.isCharlie()) {
                         System.out.println("dealer has a 5 Card Charlie!");
                         break;
                     }
-
+                    if(player.isBust()) break;
                     //System.out.println("player: " + player.getHand().getVal());
                     //System.out.println("dealer: " + dealer.getHand().getVal());
                     String strPlayer = "";
@@ -376,8 +379,8 @@ public class GameGUI {
                     textPlayer.setText(strPlayer);
                     textDealer.setText(dealer.toString());
                     playerCardClips = player.createCardClips();
-                    dealerCardClips = new ArrayList<ArrayList<BufferedImage>>();
-                    dealerCardClips.add(dealer.createCardClips());
+                    dealerCardClips.clear();
+                    dealerCardClips.add(dealer.createCardClips(true));
                     labelPlayerCards.setIcon(new ImageIcon(joinCards(playerCardClips)));
                     labelDealerCards.setIcon(new ImageIcon(joinCards(dealerCardClips)));
                     
@@ -405,7 +408,7 @@ public class GameGUI {
                         break;
                     }
 
-                    if(turn == DEALER_TURN || !player.isActive()) {
+                    if((turn == DEALER_TURN || !player.isActive()) && !player.isBust()) {
                         if(dealer.getHand().getVal() <= 16) {
                             Card c = shoe.drawCard();
                             //System.out.println("dealer drawing a " + c);
@@ -437,13 +440,9 @@ public class GameGUI {
                 }
                 String strPlayer = "";
                 for(int i = 0; i < players.size(); i++) {
-                    strPlayer += players.get(i).toString() + "\n";
+                    strPlayer += "player "+i+": " + players.get(i).toString() + "\n";
                 }
-                System.out.println(strPlayer);
-                System.out.println("dealer: " + dealer.getHand());
-                textPlayer.setText(strPlayer);
-                textDealer.setText(dealer.getHand().toString());
-
+                
                 Hand dHand = dealer.getHand();
                 if(dHand.isBlackjack()) player.earn(3.0*player.getInsBet());
                 if(dHand.isBust()) {
@@ -461,14 +460,18 @@ public class GameGUI {
                         int n = -2; // -1:loss   0:tie   1:win
                         if(!pHand.isBust()) {
                             if(pHand.isCharlie()) n = 1;
-                            else if(pHand.isBlackjack()) {
+                            else if(pHand.isBlackjack() && player.getPlayers().size() == 1) {
                                 if(dHand.isBlackjack()) n = 0;
-                                else n = 1;
+                                else {
+                                    player.earn(0.5 * player.getBet());
+                                    n = 1;
+                                }
                             }
                             else if(pHand.getVal() > dHand.getVal()) n = 1;
                             else if(pHand.getVal() == dHand.getVal()) n = 0;
                             else n = -1;
-                        }
+                        } else n = -1;
+                        
                         double mult = players.get(i).isDoubled() ? 2.0 : 1.0;
                         if(n != -1) {
                             if(n == 1) mult *= 2;
@@ -476,6 +479,18 @@ public class GameGUI {
                         }
                     }
                 }
+                System.out.println("Money: " + player.getMoney());
+                textMoney.setText(String.valueOf(player.getMoney()));
+                System.out.println(strPlayer);
+                System.out.println("dealer: " + dealer.getHand());
+                textPlayer.setText(strPlayer);
+                textDealer.setText(dealer.getHand().toString());
+                playerCardClips = player.createCardClips();
+                dealerCardClips.clear();
+                dealerCardClips.add(dealer.createCardClips(false));
+                labelPlayerCards.setIcon(new ImageIcon(joinCards(playerCardClips)));
+                labelDealerCards.setIcon(new ImageIcon(joinCards(dealerCardClips)));
+                
                 again = false;
             }
         }

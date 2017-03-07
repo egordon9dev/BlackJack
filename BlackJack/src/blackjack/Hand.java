@@ -38,7 +38,7 @@ public class Hand {
     public void drawCard(Card c) { 
         cards.add(c);
         if(getVal() > 21) bust = true;
-        if(cards.size() >= 5) charlie = true;
+        if(cards.size() >= 5 && !bust) charlie = true;
         splitable = false;
         if(cards.size() == 2) {
             Card card0 = cards.get(0);

@@ -32,11 +32,30 @@ public class Dealer {
         String s = hand.toString();
         return "??????" + s.substring(s.indexOf('\t'));
     }
-    public ArrayList<BufferedImage> createCardClips() {
+    public ArrayList<BufferedImage> createCardClips(boolean hideFirst) {
         ArrayList<BufferedImage> imgs = new ArrayList<BufferedImage>();
         ArrayList<Card> cards = hand.getCards();
         for(int i = 0; i < cards.size(); i++) {
-            imgs.add(GameGUI.cardSheet.getSubimage((cards.get(i).getID()-1)*44, 0, 44, 63));
+            if(i == 0 && hideFirst) {
+                imgs.add(GameGUI.cardSheet.getSubimage(0, 4*63, 44, 63));
+                continue;
+            }
+            int n = -1;
+            switch(cards.get(i).getSuit()) {
+                case hearts:
+                    n = 0;
+                    break;
+                case diamonds:
+                    n = 1;
+                    break;
+                case clubs:
+                    n = 2;
+                    break;
+                case spades:
+                    n = 3;
+                    break;
+            }
+            imgs.add(GameGUI.cardSheet.getSubimage((cards.get(i).getID()-1)*44, n*63, 44, 63));
         }
         return imgs;
     }
