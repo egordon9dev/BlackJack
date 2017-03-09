@@ -22,16 +22,8 @@ public class PartialPlayer {
     
     private Hand hand;
     public Hand getHand() { return hand; }
-    public void resetHand() {
-        hand = new Hand();
-    }
     public void setHand(Hand hand) {
         this.hand = hand;
-    }
-    public void reset() {
-        resetHand();
-        standing = false;
-        active = true;
     }
     public PartialPlayer() {
         hand = new Hand();

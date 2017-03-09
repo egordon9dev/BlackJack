@@ -15,6 +15,9 @@ public class Player{
     private double bet = 0.0;
     private double insBet = 0.0;
     private int focusedPlayer = 0;
+    private boolean bankrupt = false;
+    public void setBankrupt(boolean b) { bankrupt = b; }
+    public boolean isBankrupt() { return bankrupt; }
     public double getMoney() { return money; }
     public void setMoney(double money) { this.money = money; }
     public double getBet() { return bet; }
@@ -23,11 +26,21 @@ public class Player{
     public void setInsBet(double n) { insBet = n; }
     public int getFocusedPlayer() { return focusedPlayer; }
     public void incFocusedPlayer() {
-        focusedPlayer++;
-        if(focusedPlayer >= players.size()) focusedPlayer = 0;
+        int ctr = 0;
+        do {
+            ctr++;
+            focusedPlayer++;
+            if(focusedPlayer >= players.size()) focusedPlayer = 0;
+        }while( ctr <= players.size() &&
+         (players.get(focusedPlayer).isStanding() ||
+         players.get(focusedPlayer).getHand().isCharlie() ||
+         players.get(focusedPlayer).getHand().isBust())  );
+        
     }
     public void earn(double earnings) { money += earnings; }
-    public void betMoney(double n) { money -= n; }
+    public void betMoney(double n) {
+        money -= n;
+    }
     ArrayList<PartialPlayer> players = new ArrayList<PartialPlayer>();
     public ArrayList<PartialPlayer> getPlayers() { return players; }
     public boolean isBust() {
@@ -49,6 +62,17 @@ public class Player{
         players = new ArrayList<PartialPlayer>();
         players.add(new PartialPlayer());
     }
+    
+    public void drawCard(Card c) {
+        players.get(focusedPlayer).getHand().drawCard(c);
+        if (  (players.get(focusedPlayer).getHand().isBlackjack() && players.size() == 1) ||
+              (players.get(focusedPlayer).isStanding())  ||
+              (players.get(focusedPlayer).getHand().isCharlie()) ||
+              (players.get(focusedPlayer).getHand().isBust())   ){
+            players.get(0).setActive(false);
+        }
+    }
+    
     public Player(double money) {
         this.money = money;
         players.add(new PartialPlayer());

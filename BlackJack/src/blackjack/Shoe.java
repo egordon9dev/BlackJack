@@ -7,8 +7,10 @@ import java.util.*;
  */
 public class Shoe {
     ArrayList<Card> cards = new ArrayList<Card>();
-    private final int NUM_OF_DECKS = 5;
-    
+    private final int NUM_OF_DECKS;
+    /**
+     * shuffles cards
+     */
     public void shuffle() {
         ArrayList<Card> newCards = new ArrayList<Card>();
         for(int i = cards.size(); i > 0; i--) {
@@ -18,7 +20,9 @@ public class Shoe {
         }
         cards = newCards;
     }
-    
+    /**
+     * declares a new ArrayList of cards and fills it
+     */
     private void refill() {
         cards = new ArrayList<Card>();
         for(int i = 0; i < NUM_OF_DECKS; i++) {
@@ -28,13 +32,24 @@ public class Shoe {
             }
         }
     }
-    public Shoe() {
+    
+    /**
+     * @param x number of decks
+     */
+    public Shoe(int x) {
+        NUM_OF_DECKS = x;
         refill();
         shuffle();
     }
     
+    /**
+     * @return cards
+     */
     public ArrayList<Card> getCards() { return cards; }
     
+    /**
+     * @return next card in the shoe
+     */
     public Card drawCard() {
         if(cards.size() < 52 * (NUM_OF_DECKS-1)) {
             refill();

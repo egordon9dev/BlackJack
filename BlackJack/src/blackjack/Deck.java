@@ -11,6 +11,11 @@ import java.util.ArrayList;
  */
 public class Deck {
     private ArrayList<Card> cards = new ArrayList<Card>();
+    
+    /**
+     * declares new deck
+     * fills it with cards (un-shuffled)
+     */
     public Deck() {
         int val;
         for(int i = 1; i <= 13; i++) {
@@ -19,20 +24,24 @@ public class Deck {
             for(int j = 0; j < 4; j++) {
                 switch(j) {
                     case 0:
-                        cards.add(new Card(10, 13, Suit.hearts));
+                        cards.add(new Card(val, i, Suit.hearts));
                         break;
                     case 1:
-                        cards.add(new Card(1, 1, Suit.diamonds));
+                        cards.add(new Card(val, i, Suit.diamonds));
                         break;
                     case 2:
-                        cards.add(new Card(1, 1, Suit.spades));
+                        cards.add(new Card(val, i, Suit.spades));
                         break;
                     case 3:
-                        cards.add(new Card(1, 1, Suit.clubs));
+                        cards.add(new Card(val, i, Suit.clubs));
                         break;
                 };
             }
         }
     }
+    
+    /**
+     * @return cards in deck
+     */
     public ArrayList<Card> getCards() { return cards; }
 }
