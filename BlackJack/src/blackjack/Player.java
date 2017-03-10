@@ -25,17 +25,30 @@ public class Player{
     public double getInsBet() { return insBet; }
     public void setInsBet(double n) { insBet = n; }
     public int getFocusedPlayer() { return focusedPlayer; }
-    public void incFocusedPlayer() {
+    
+    public void updateFocusedPlayer() {
         int ctr = 0;
-        do {
-            ctr++;
-            focusedPlayer++;
-            if(focusedPlayer >= players.size()) focusedPlayer = 0;
-        }while( ctr <= players.size() &&
+        while( ctr <= players.size() &&
          (players.get(focusedPlayer).isStanding() ||
          players.get(focusedPlayer).getHand().isCharlie() ||
-         players.get(focusedPlayer).getHand().isBust())  );
+         players.get(focusedPlayer).getHand().isBust()) ||
+         !players.get(focusedPlayer).isActive()) {
+            ctr++;
+            focusedPlayer++;
+            if(focusedPlayer >= players.size()) {
+                focusedPlayer = 0;
+                GameGUI.incPlayerUp();
+            }
+        }
         
+    }
+    public void incFocusedPlayer() {
+        focusedPlayer++;
+        if(focusedPlayer >= players.size()) {
+            focusedPlayer = 0;
+            GameGUI.incPlayerUp();
+        }
+        updateFocusedPlayer();
     }
     public void earn(double earnings) { money += earnings; }
     public void betMoney(double n) {

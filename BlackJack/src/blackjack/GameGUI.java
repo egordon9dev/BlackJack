@@ -42,9 +42,9 @@ public class GameGUI {
     /**
      * PRECONDITION: it must be the player's turn
      */
-    private static void updatePlayerUp() {
+    public static void updatePlayerUp() {
         int ctr = 0;
-        while( (ctr <= NUM_PLAYERS && !player[playerUp].isActive())|| player[playerUp].isBankrupt() ) {
+        while( ctr <= NUM_PLAYERS && (!player[playerUp].isActive() || player[playerUp].isBankrupt()) ) {
             playerUp++;
             if(playerUp >= NUM_PLAYERS) {
                 playerUp = 0;
@@ -53,7 +53,7 @@ public class GameGUI {
             ctr++;
         }
     }
-    private static void incPlayerUp() {
+    public static void incPlayerUp() {
         playerUp++;
         if(playerUp >= NUM_PLAYERS) {
             playerUp = 0;
@@ -154,9 +154,6 @@ public class GameGUI {
                         player[playerUp].drawCard(c);
                     }
                     player[playerUp].incFocusedPlayer();
-                    if (player[playerUp].getFocusedPlayer() == 0) {
-                        incPlayerUp();
-                    }
                 }
             }
         });
@@ -172,9 +169,6 @@ public class GameGUI {
                         p.setStanding(true);
                     }
                     player[playerUp].incFocusedPlayer();
-                    if (player[playerUp].getFocusedPlayer() == 0) {
-                        incPlayerUp();
-                    }
                 }
             }
         });
@@ -197,9 +191,6 @@ public class GameGUI {
                         }
                     } else {
                         player[playerUp].incFocusedPlayer();
-                        if (player[playerUp].getFocusedPlayer() == 0) {
-                            incPlayerUp();
-                        }
                     }
                 }
             }
@@ -212,9 +203,6 @@ public class GameGUI {
                         p.setStanding(true);
                     }
                     player[playerUp].incFocusedPlayer();
-                    if (player[playerUp].getFocusedPlayer() == 0) {
-                        incPlayerUp();
-                    }
                 }
             }
         });
@@ -242,7 +230,7 @@ public class GameGUI {
         south.add(butStand);
         panel.add(south, BorderLayout.SOUTH);
 
-        butAgain.setBackground(new Color(136, 224, 123));
+        butAgain.setBackground(MainPanel.color);
         butAgain.setBorder(BorderFactory.createLineBorder(new Color(51, 140, 37), 1));
         butAgain.setPreferredSize(new Dimension(100, 50));
         panel.add(butAgain, BorderLayout.EAST);
@@ -255,19 +243,24 @@ public class GameGUI {
 
         labelDealer = new JLabel("Dealer: ");
         labelDealerCards = new JLabel();
-        Box westBox = Box.createVerticalBox();
+        Box wb1 = Box.createVerticalBox();
+        Box wb2 = Box.createVerticalBox();
         for(int i = 0; i < NUM_PLAYERS; i++) {
             SubPanel cardPane = new SubPanel(new FlowLayout());
             cardPane.setBackground(MainPanel.color);
             cardPane.add(pvars[i].labelPlayer);
             cardPane.add(pvars[i].labelPlayerCards);
-            westBox.add(cardPane);
+            if(i < (NUM_PLAYERS)/2) wb1.add(cardPane);
+            else wb2.add(cardPane);
         }
         SubPanel dealerCardPane = new SubPanel(new FlowLayout());
         dealerCardPane.setBackground(MainPanel.color);
         dealerCardPane.add(labelDealer);
         dealerCardPane.add(labelDealerCards);
-        westBox.add(dealerCardPane);
+        wb1.add(dealerCardPane);
+        Box westBox = Box.createHorizontalBox();
+        westBox.add(wb1);
+        westBox.add(wb2);
         panel.add(westBox, BorderLayout.WEST);
 
         frame.add(panel);
@@ -286,9 +279,21 @@ public class GameGUI {
             }
         });
     }
-
+    public static void resetGUI() {
+        butAgain.setBackground(MainPanel.color);
+        butAgain.setBorder(BorderFactory.createLineBorder(MainPanel.color));
+        butAgain.setText("");
+        for(int i = 0; i < NUM_PLAYERS; i++) {
+            pvars[i].labelPlayerCards.setIcon(new ImageIcon(
+                    new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB)));
+            pvars[i].labelPlayer.setText("");
+            labelDealer.setText("");
+        }
+        labelDealerCards.setIcon(new ImageIcon(
+            new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB)));
+    }
     public static BufferedImage joinCards(ArrayList<ArrayList<BufferedImage>> imgs) {
-        if(imgs.get(0).size() == 0) return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        if(imgs.get(0).isEmpty()) return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         //trim list
         for (int i = imgs.size() - 1; i >= 0; i--) {
             if (imgs.get(i).size() <= 0) {
@@ -343,6 +348,7 @@ public class GameGUI {
                 pvars[i].textMoney.setText(String.valueOf(player[i].getMoney()));
             }
             if (again) {
+                resetGUI();
                 for(int i = 0; i < NUM_PLAYERS; i++) {
                     player[i].reset();
                     pvars[i].strIns = "invalid";
@@ -384,20 +390,22 @@ public class GameGUI {
                 dealer.getHand().drawCard(shoe.drawCard());
                 
                 while (!allPlayersNotActive(NUM_PLAYERS-1)) {
-                    updatePlayerUp();
                     for(int q = 0; q < NUM_PLAYERS; q++) {
-                        if(player[q].getPlayers().get(player[q].getFocusedPlayer()).isStanding() ||
-                          player[q].getPlayers().get(player[q].getFocusedPlayer()).getHand().isCharlie() ||
-                          player[q].getPlayers().get(player[q].getFocusedPlayer()).getHand().isBust()   ) {
-                            player[q].getPlayers().get(player[q].getFocusedPlayer()).setActive(false);
+                        for(PartialPlayer p : player[q].getPlayers()) {
+                            if(p.isStanding() ||
+                              p.getHand().isCharlie() ||
+                              p.getHand().isBust()   ) {
+                                p.setActive(false);
+                            }
                         }
                         if(q == playerUp) {
-                            pvars[q].labelPlayer.setText("player "+q+": =========>>");
-                            pvars[q].labelPlayer.setBackground(Color.GREEN);
+                            pvars[q].labelPlayer.setText("player "+q+"."+player[q].getFocusedPlayer()+
+                                ": =========>>"+player[q].isActive()+
+                                player[q].getPlayers().get(player[q].getFocusedPlayer()).isActive());
                         } else {
                             pvars[q].labelPlayer.setText("player "+q+": ");
-                            pvars[q].labelPlayer.setBackground(Color.BLACK);
                         }
+                        labelDealer.setText("Dealer:");
                     }
                     Hand dealerHand = dealer.getHand();
                     //dealer bust
@@ -431,11 +439,13 @@ public class GameGUI {
                             double max = player[w].getBet() / 2.0 < player[w].getMoney() ? player[w].getBet() / 2.0 : player[w].getMoney();
                             while (true) {
                                 try {
-                                    while (pvars[w].strIns.equals("invalid")) {
-                                    }
-                                    Double insBet = Double.parseDouble(pvars[w].strIns);
-                                    if (insBet > max || insBet < 0.0) {
-                                        continue;
+                                    Double insBet = 0.0;
+                                    if(!player[w].isBankrupt()) {
+                                        while (pvars[w].strIns.equals("invalid")) {}
+                                        insBet = Double.parseDouble(pvars[w].strIns);
+                                        if (insBet > max || insBet < 0.0) {
+                                            continue;
+                                        }
                                     }
                                     player[w].setInsBet(insBet);
                                     player[w].betMoney(insBet);
@@ -465,10 +475,12 @@ public class GameGUI {
                             dealer.setActive(false);
                         }
                         turn = PLAYER_TURN;
-                        playerUp = 0;
                     }
                 }
 
+                butAgain.setBackground(new Color(136, 224, 123));
+                butAgain.setBorder(BorderFactory.createLineBorder(new Color(51, 140, 37), 1));
+                butAgain.setText("AGAIN?");
                 Hand dHand = dealer.getHand();
                 if (dHand.isBlackjack()) {
                     for(int w = 0; w < NUM_PLAYERS; w++) {
@@ -527,13 +539,13 @@ public class GameGUI {
                     System.out.println("Money: " + player[w].getMoney());
                     pvars[w].textMoney.setText(String.valueOf(player[w].getMoney()));
                     System.out.println(strPlayer[w]);
-                    System.out.println("dealer: " + dealer.getHand());
                     pvars[w].playerCardClips = player[w].createCardClips();
-                    dealerCardClips.clear();
-                    dealerCardClips.add(dealer.createCardClips(false));
                     pvars[w].labelPlayerCards.setIcon(new ImageIcon(joinCards(pvars[w].playerCardClips)));
-                    labelDealerCards.setIcon(new ImageIcon(joinCards(dealerCardClips)));
                 }
+                System.out.println("dealer: " + dealer.getHand());
+                dealerCardClips.clear();
+                dealerCardClips.add(dealer.createCardClips(!notAllPlayersBust(NUM_PLAYERS-1)));
+                labelDealerCards.setIcon(new ImageIcon(joinCards(dealerCardClips)));
                 again = false;
             }
             for(int q = 0; q < NUM_PLAYERS; q++) {

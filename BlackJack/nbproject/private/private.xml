@@ -2,14 +2,6 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/C:/Users/ethan/Desktop/BlackJack/BlackJack/src/blackjack/Dealer.java</file>
-            <file>file:/C:/Users/ethan/Desktop/BlackJack/BlackJack/src/blackjack/pvar_t.java</file>
-            <file>file:/C:/Users/ethan/Desktop/BlackJack/BlackJack/src/blackjack/Hand.java</file>
-            <file>file:/C:/Users/ethan/Desktop/BlackJack/BlackJack/src/blackjack/Card.java</file>
-            <file>file:/C:/Users/ethan/Desktop/BlackJack/BlackJack/src/blackjack/Shoe.java</file>
-            <file>file:/C:/Users/ethan/Desktop/BlackJack/BlackJack/src/blackjack/Player.java</file>
-            <file>file:/C:/Users/ethan/Desktop/BlackJack/BlackJack/src/blackjack/GameGUI.java</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>
