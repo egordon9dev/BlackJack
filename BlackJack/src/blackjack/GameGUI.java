@@ -22,122 +22,29 @@ import java.io.IOException;
 public class GameGUI {
 
     public static BufferedImage cardSheet;
-    private static ArrayList<ArrayList<BufferedImage>> dealerCardClips;
-    private static JLabel labelDealerCards, labelDealer;
     private static JButton butHit, butStand, butDouble, butAgain, butSplit;
     private static boolean again = true;
-
-    private static int playerUp = 0;
-    private static final int NUM_PLAYERS = 4;
-
-    private static int PLAYER_TURN = 14981;
-    private static int DEALER_TURN = 98321;
-    private static int turn = PLAYER_TURN;
-    private static Player player[];
-    private static Dealer dealer = new Dealer();
+    
+    private static GraphicDealer dealer = new GraphicDealer();
     private static Shoe shoe = new Shoe(5);
 
-    private static pvar_t pvars[] = new pvar_t[NUM_PLAYERS];
+    private static AllPlayers allP;
+    public static AllPlayers getAllP() { return allP; }
 
-    /**
-     * PRECONDITION: it must be the player's turn
-     */
-    public static void updatePlayerUp() {
-        int ctr = 0;
-        while( ctr <= NUM_PLAYERS && (!player[playerUp].isActive() || player[playerUp].isBankrupt()) ) {
-            playerUp++;
-            if(playerUp >= NUM_PLAYERS) {
-                playerUp = 0;
-                turn = DEALER_TURN;
-            }
-            ctr++;
-        }
+    public static final boolean DEBUG_MODE = true;
+    public static void writeLog(String s) {
+        if(DEBUG_MODE) System.out.println(s);
     }
-    public static void incPlayerUp() {
-        playerUp++;
-        if(playerUp >= NUM_PLAYERS) {
-            playerUp = 0;
-            turn = DEALER_TURN;
-        }
-        updatePlayerUp();
-    }
-
+    
     public static void setupGUI() {
-        pvars[0] = new pvar_t();
-        pvars[1] = new pvar_t();
-        pvars[2] = new pvar_t();
-        pvars[3] = new pvar_t();
-
+        
         JFrame frame = new JFrame();
         MainPanel panel = new MainPanel();
 
-        for(int i = 0; i < NUM_PLAYERS; i++) {
-            pvars[i].textMoney = new JTextField(10);
-            pvars[i].textBet = new JTextField(10);
-            pvars[i].textIns = new JTextField(10);
-
-            pvars[i].labelMoney = new JLabel("MONEY: ");
-            pvars[i].labelBet = new JLabel("BET: ");
-            pvars[i].labelIns = new JLabel("INSURANCE BET: ");
-
-            pvars[i].textMoney.setFocusable(false);
-            pvars[i].textIns.setText("0");
-            pvars[i].textMoney.setBackground(MainPanel.color);
-            pvars[i].textMoney.setBorder(BorderFactory.createLineBorder(MainPanel.color));
-            pvars[i].textBet.setBackground(MainPanel.color);
-            pvars[i].textBet.setBorder(BorderFactory.createLineBorder(MainPanel.color));
-            pvar_t pvar = pvars[i];
-            pvars[i].textBet.addFocusListener(new FocusListener() {
-                @Override
-                public void focusGained(FocusEvent fe) {
-                }
-
-                @Override
-                public void focusLost(FocusEvent fe) {
-                    pvar.strBet = pvar.textBet.getText();
-                }
-            });
-            pvars[i].textBet.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent ae) {
-                    pvar.strBet = pvar.textBet.getText();
-                }
-            });
-            pvars[i].textIns.setBackground(MainPanel.color);
-            pvars[i].textIns.setBorder(BorderFactory.createLineBorder(MainPanel.color));
-            pvars[i].textIns.addFocusListener(new FocusListener() {
-                @Override
-                public void focusGained(FocusEvent fe) {
-                }
-
-                @Override
-                public void focusLost(FocusEvent fe) {
-                    pvar.strIns = pvar.textIns.getText();
-                }
-            });
-            pvars[i].textIns.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent ae) {
-                    pvar.strIns = pvar.textIns.getText();
-                }
-            });
-            pvars[i].northPanel = new SubPanel(new FlowLayout());
-            pvars[i].northPanel.add(pvars[i].labelMoney);
-            pvars[i].northPanel.add(pvars[i].textMoney);
-            pvars[i].northPanel.add(pvars[i].labelBet);
-            pvars[i].northPanel.add(pvars[i].textBet);
-            pvars[i].northPanel.add(pvars[i].labelIns);
-            pvars[i].northPanel.add(pvars[i].textIns);
-
-            pvars[i].playerCardClips = new ArrayList<ArrayList<BufferedImage>>();
-            pvars[i].labelPlayerCards = new JLabel();
-            pvars[i].labelPlayer = new JLabel("Player "+i+": ");
-        }
         Box northBox = Box.createVerticalBox();
-        northBox.add(pvars[0].northPanel);
-        northBox.add(pvars[1].northPanel);
-        northBox.add(pvars[2].northPanel);
-        northBox.add(pvars[3].northPanel);
+        for(int i = 0; i < allP.numP(); i++) {
+            northBox.add(allP.p(i).getNorthPanel());
+        }
         panel.add(northBox, BorderLayout.NORTH);
 
         butHit = new JButton("HIT");
@@ -147,63 +54,44 @@ public class GameGUI {
         butAgain = new JButton("Again?");
         butHit.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (turn == PLAYER_TURN) {
-                    PartialPlayer p = player[playerUp].getPlayers().get(player[playerUp].getFocusedPlayer());
-                    if (p.isActive()) {
-                        Card c = shoe.drawCard();
-                        player[playerUp].drawCard(c);
-                    }
-                    player[playerUp].incFocusedPlayer();
-                }
+                allP.p().drawCard(shoe.drawCard());
+                allP.update();
+                if(!allP.p().getPlayers().get(allP.p().getFocusedPlayer()).isActive()) allP.p().incFocusedPlayer();
             }
         });
         butDouble.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (turn == PLAYER_TURN) {
-                    PartialPlayer p = player[playerUp].getPlayers().get(player[playerUp].getFocusedPlayer());
-                    if (p.isActive()) {
-                        Card c = shoe.drawCard();
-                        player[playerUp].drawCard(c);
-                        p.setDoubled();
-                        player[playerUp].betMoney(player[playerUp].getBet());
-                        p.setStanding(true);
-                    }
-                    player[playerUp].incFocusedPlayer();
-                }
+                PartialPlayer pp = allP.p().getPlayers().get(allP.p().getFocusedPlayer());
+                pp.setDoubled();
+                allP.p().betMoney(allP.p().getBet());
+                pp.setStanding(true);
+                allP.p().drawCard(shoe.drawCard());
+                allP.update();
+                if(!allP.p().getPlayers().get(allP.p().getFocusedPlayer()).isActive()) allP.p().incFocusedPlayer();
             }
         });
         butSplit.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (turn == PLAYER_TURN) {
-                    int fp = player[playerUp].getFocusedPlayer();
-                    if (player[playerUp].getPlayers().get(fp).isActive()) {
-                        Hand hand0 = player[playerUp].getPlayers().get(fp).getHand();
-                        //if it's splitable and if no cards have been added since it's been updated
-                        //to being splitable - making sure it's still splitable
-                        if (hand0.isSplitable() && hand0.getCards().size() == 2
-                                && player[playerUp].getMoney() >= player[playerUp].getBet()) {
-                            player[playerUp].getPlayers().add(fp + 1, new PartialPlayer());
-                            ArrayList<Card> cards0 = hand0.getCards();
-                            ArrayList<Card> cards1 = player[playerUp].getPlayers().get(fp + 1).getHand().getCards();
-                            cards1.add(cards0.get(1));
-                            cards0.remove(1);
-                            player[playerUp].betMoney(player[playerUp].getBet());
-                        }
-                    } else {
-                        player[playerUp].incFocusedPlayer();
-                    }
+                int fp = allP.p().getFocusedPlayer();
+                Hand hand0 = allP.p().getPlayers().get(fp).getHand();
+                //if it's splitable and if no cards have been added since it's been updated
+                //to being splitable - making sure it's still splitable
+                if (hand0.isSplitable() && hand0.getCards().size() == 2
+                        && allP.p().getMoney() >= allP.p().getBet()) {
+                    allP.p().getPlayers().add(fp + 1, new PartialPlayer());
+                    ArrayList<Card> cards0 = hand0.getCards();
+                    ArrayList<Card> cards1 = allP.p().getPlayers().get(fp + 1).getHand().getCards();
+                    cards1.add(cards0.get(1));
+                    cards0.remove(1);
+                    allP.p().betMoney(allP.p().getBet());
                 }
             }
         });
         butStand.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (turn == PLAYER_TURN) {
-                    PartialPlayer p = player[playerUp].getPlayers().get(player[playerUp].getFocusedPlayer());
-                    if (p.isActive()) {
-                        p.setStanding(true);
-                    }
-                    player[playerUp].incFocusedPlayer();
-                }
+                allP.p().getPlayers().get(allP.p().getFocusedPlayer()).setStanding(true);
+                allP.update();
+                if(!allP.p().getPlayers().get(allP.p().getFocusedPlayer()).isActive()) allP.p().incFocusedPlayer();
             }
         });
         butAgain.addActionListener(new ActionListener() {
@@ -235,29 +123,27 @@ public class GameGUI {
         butAgain.setPreferredSize(new Dimension(100, 50));
         panel.add(butAgain, BorderLayout.EAST);
 
-        dealerCardClips = new ArrayList<ArrayList<BufferedImage>>();
+        
         try {
             cardSheet = ImageIO.read(new File("playingCards2.png"));
         } catch (IOException e) {
         }
 
-        labelDealer = new JLabel("Dealer: ");
-        labelDealerCards = new JLabel();
         Box wb1 = Box.createVerticalBox();
         Box wb2 = Box.createVerticalBox();
-        for(int i = 0; i < NUM_PLAYERS; i++) {
-            SubPanel cardPane = new SubPanel(new FlowLayout());
-            cardPane.setBackground(MainPanel.color);
-            cardPane.add(pvars[i].labelPlayer);
-            cardPane.add(pvars[i].labelPlayerCards);
-            if(i < (NUM_PLAYERS)/2) wb1.add(cardPane);
-            else wb2.add(cardPane);
+        for(int i = 0; i < allP.numP(); i++) {
+            SubPanel playerPane = new SubPanel(new FlowLayout());
+            playerPane.setBackground(MainPanel.color);
+            playerPane.add(allP.p(i).getLabelPlayer());
+            playerPane.add(allP.p(i).getLabelPlayerCards());
+            if(i < (allP.numP())/2) wb1.add(playerPane);
+            else wb2.add(playerPane);
         }
-        SubPanel dealerCardPane = new SubPanel(new FlowLayout());
-        dealerCardPane.setBackground(MainPanel.color);
-        dealerCardPane.add(labelDealer);
-        dealerCardPane.add(labelDealerCards);
-        wb1.add(dealerCardPane);
+        SubPanel dealerPane = new SubPanel(new FlowLayout());
+        dealerPane.setBackground(MainPanel.color);
+        dealerPane.add(dealer.getLabelDealer());
+        dealerPane.add(dealer.getLabelDealerCards());
+        wb1.add(dealerPane);
         Box westBox = Box.createHorizontalBox();
         westBox.add(wb1);
         westBox.add(wb2);
@@ -283,13 +169,13 @@ public class GameGUI {
         butAgain.setBackground(MainPanel.color);
         butAgain.setBorder(BorderFactory.createLineBorder(MainPanel.color));
         butAgain.setText("");
-        for(int i = 0; i < NUM_PLAYERS; i++) {
-            pvars[i].labelPlayerCards.setIcon(new ImageIcon(
+        for(int i = 0; i < allP.numP(); i++) {
+            allP.p(i).getLabelPlayerCards().setIcon(new ImageIcon(
                     new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB)));
-            pvars[i].labelPlayer.setText("");
-            labelDealer.setText("");
+            allP.p(i).getLabelPlayer().setText("");
+            dealer.getLabelDealer().setText("");
         }
-        labelDealerCards.setIcon(new ImageIcon(
+        dealer.getLabelDealerCards().setIcon(new ImageIcon(
             new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB)));
     }
     public static BufferedImage joinCards(ArrayList<ArrayList<BufferedImage>> imgs) {
@@ -324,157 +210,51 @@ public class GameGUI {
         g2.dispose();
         return newImage;
     }
-    public static boolean allPlayersBankrupt(int n) {
-        if(n == 0) return player[n].isBankrupt();
-        return player[n].isBankrupt() && allPlayersBankrupt(n-1);
-    }
-    public static boolean allPlayersNotActive(int n) {
-        if(n == 0) return !player[n].isActive();
-        return !player[n].isActive() && allPlayersNotActive(n-1);
-    }
-    public static boolean notAllPlayersBust(int n) {
-        if(n == 0) return !player[n].isBust();
-        return !player[n].isBust() || notAllPlayersBust(n-1);
-    }
+    
     public static void main(String args[]) {
-
+        allP = new AllPlayers(4);
         setupGUI();
 
-        player = new Player[NUM_PLAYERS];
-        for(int i = 0; i < NUM_PLAYERS; i++) player[i] = new Player(10000);
-
-        while (!allPlayersBankrupt(NUM_PLAYERS-1)) {
-            for(int i = 0; i < NUM_PLAYERS; i++) {
-                pvars[i].textMoney.setText(String.valueOf(player[i].getMoney()));
-            }
+        while (!allP.allPlayersBankrupt()) {
+            for(int i = 0; i < allP.numP(); i++) writeLog("Player "+i+" Money: "+allP.p(i).getMoney());
+            allP.updateTextMoney();
             if (again) {
                 resetGUI();
-                for(int i = 0; i < NUM_PLAYERS; i++) {
-                    player[i].reset();
-                    pvars[i].strIns = "invalid";
-                    pvars[i].strBet = "invalid";
-                    pvars[i].textBet.setText("invalid");
-                    pvars[i].textIns.setText("invalid");
-                    
-                    if(player[i].isBankrupt()) {
-                        for(PartialPlayer p : player[i].getPlayers()) {
-                            p.setActive(false);
-                        }
-                        continue;
-                    }
-                    //get bet input
-                    while (true) {
-                        try {
-                            while (pvars[i].strBet.equals("invalid")) {}
-                            double bet = Double.parseDouble(pvars[i].strBet);
-                            if (bet > player[i].getMoney() || bet < 0.0) {
-                                continue;
-                            }
-                            player[i].betMoney(bet);
-                            player[i].setBet(bet);
-                            break;
-                        } catch (Exception e) {}
-                    }
-
-                    PartialPlayer pp = player[i].getPlayers().get(0);
-                    //setup hands
-                    player[i].drawCard(shoe.drawCard());
-                    player[i].drawCard(shoe.drawCard());
-                }
-                dealer.reset();
-                playerUp = 0;
-                turn = PLAYER_TURN;
-                String strPlayer[] = new String[NUM_PLAYERS];
-
+                dealer.nextRound();
+                allP.nextRound();
+                allP.setup(shoe);
                 dealer.getHand().drawCard(shoe.drawCard());
                 dealer.getHand().drawCard(shoe.drawCard());
                 
-                while (!allPlayersNotActive(NUM_PLAYERS-1)) {
-                    for(int q = 0; q < NUM_PLAYERS; q++) {
-                        for(PartialPlayer p : player[q].getPlayers()) {
-                            if(p.isStanding() ||
-                              p.getHand().isCharlie() ||
-                              p.getHand().isBust()   ) {
-                                p.setActive(false);
-                            }
-                        }
-                        if(q == playerUp) {
-                            pvars[q].labelPlayer.setText("player "+q+"."+player[q].getFocusedPlayer()+
-                                ": =========>>"+player[q].isActive()+
-                                player[q].getPlayers().get(player[q].getFocusedPlayer()).isActive());
-                        } else {
-                            pvars[q].labelPlayer.setText("player "+q+": ");
-                        }
-                        labelDealer.setText("Dealer:");
-                    }
+                String strPlayer[] = new String[allP.numP()];
+
+                
+                while (!allP.allPlayersNotActive()) {
+                    allP.update();
+                    dealer.getLabelDealer().setText("Dealer:");
                     Hand dealerHand = dealer.getHand();
                     //dealer bust
-                    if (dealerHand.getVal() > 21) {
-                        System.out.println("dealer bust");
-                        break;
+                    if (dealerHand.getVal() > 21 || dealerHand.isCharlie()) break;
+                    //update player and dealer cards in gui
+                    allP.updateCards();
+                    if(DEBUG_MODE) for(int q = 0; q < allP.numP(); q++){
+                        writeLog(allP.p(q).getStrPlayer());
+                        writeLog("dealer: " + dealer);
                     }
-                    //dealer charlie
-                    if (dealerHand.isCharlie()) {
-                        System.out.println("dealer has a 5 Card Charlie!");
-                        break;
-                    }
-                    for(int w = 0; w < NUM_PLAYERS; w++) {
-                        strPlayer[w] = "player "+w+": ";
-                        for (int i = 0; i < player[w].getPlayers().size(); i++) {
-                            strPlayer[w] += player[w].getPlayers().get(i).toString() + "\n";
-                        }
-                        System.out.println(strPlayer[w]);
-                        pvars[w].playerCardClips = player[w].createCardClips();
-                        pvars[w].labelPlayerCards.setIcon(new ImageIcon(joinCards(pvars[w].playerCardClips)));
-                    }
-                    System.out.println("dealer: " + dealer);
-                    dealerCardClips.clear();
-                    dealerCardClips.add(dealer.createCardClips(true));
-                    labelDealerCards.setIcon(new ImageIcon(joinCards(dealerCardClips)));
-
-                    for(int w = 0; w < NUM_PLAYERS; w++) {
-                        //insurance bet input
-                        if (player[w].getInsBet() > -0.000001 && player[w].getInsBet() < 0.000001
-                                && dealerHand.getCards().get(1).getID() == 1) {
-                            double max = player[w].getBet() / 2.0 < player[w].getMoney() ? player[w].getBet() / 2.0 : player[w].getMoney();
-                            while (true) {
-                                try {
-                                    Double insBet = 0.0;
-                                    if(!player[w].isBankrupt()) {
-                                        while (pvars[w].strIns.equals("invalid")) {}
-                                        insBet = Double.parseDouble(pvars[w].strIns);
-                                        if (insBet > max || insBet < 0.0) {
-                                            continue;
-                                        }
-                                    }
-                                    player[w].setInsBet(insBet);
-                                    player[w].betMoney(insBet);
-                                    break;
-                                } catch (Exception e) {
-                                }
-                            }
-                        }
-                    }
+                    dealer.updateDealerCardClips(true);
+                    //this blocks untill valid insurance bets are recieved
+                    if(dealerHand.getCards().get(1).getID() == 1) allP.updateInsBet();
                     //dealer blackjack
                     if (dealerHand.isBlackjack()) {
-                        System.out.println("dealer has a blackjack!");
+                        if(DEBUG_MODE) writeLog("dealer has a blackjack!");
                         break;
                     }
-
-                    while((turn == DEALER_TURN ||
-                         allPlayersNotActive(NUM_PLAYERS-1)) &&
-                         notAllPlayersBust(NUM_PLAYERS-1) &&
-                         dealer.isActive()){
-
-                        if (dealer.getHand().getVal() <= 16) {
-                            Card c = shoe.drawCard();
-                            //System.out.println("dealer drawing a " + c);
-                            dealer.getHand().drawCard(c);
-                            dealer.setActive(true);
-                        } else {
-                            dealer.setActive(false);
-                        }
-                        turn = PLAYER_TURN;
+                    while(true) {
+                        dealer.updateActivity();
+                        if(!allP.isPlayerTurn() && allP.notAllPlayersBust() && dealer.isActive()){
+                            dealer.getHand().drawCard(shoe.drawCard());
+                            dealer.updateActivity();
+                        } else break;
                     }
                 }
 
@@ -483,34 +263,34 @@ public class GameGUI {
                 butAgain.setText("AGAIN?");
                 Hand dHand = dealer.getHand();
                 if (dHand.isBlackjack()) {
-                    for(int w = 0; w < NUM_PLAYERS; w++) {
-                        player[w].earn(3.0 * player[w].getInsBet());
+                    for(int w = 0; w < allP.numP(); w++) {
+                        allP.p(w).earn(3.0 * allP.p(w).getInsBet());
                     }
                 }
                 if (dHand.isBust()) {
-                    for(int w = 0; w < NUM_PLAYERS; w++) {
-                        for (int i = 0; i < player[w].getPlayers().size(); i++) {
-                            double mult = player[w].getPlayers().get(i).isDoubled() ? 2.0 : 1.0;
-                            if (player[w].getPlayers().get(i).getHand().isBust()) {
-                                player[w].earn(mult * player[w].getBet());
+                    for(int w = 0; w < allP.numP(); w++) {
+                        for (int i = 0; i < allP.p(w).getPlayers().size(); i++) {
+                            double mult = allP.p(w).getPlayers().get(i).isDoubled() ? 2.0 : 1.0;
+                            if (allP.p(w).getPlayers().get(i).getHand().isBust()) {
+                                allP.p(w).earn(mult * allP.p(w).getBet());
                             } else {
-                                player[w].earn(mult * 2.0 * player[w].getBet());
+                                allP.p(w).earn(mult * 2.0 * allP.p(w).getBet());
                             }
                         }
                     }
                 } else {
-                    for(int w = 0; w < NUM_PLAYERS; w++) {
-                        for (int i = 0; i < player[w].getPlayers().size(); i++) {
-                            Hand pHand = player[w].getPlayers().get(i).getHand();
+                    for(int w = 0; w < allP.numP(); w++) {
+                        for (int i = 0; i < allP.p(w).getPlayers().size(); i++) {
+                            Hand pHand = allP.p(w).getPlayers().get(i).getHand();
                             int n = -2; // -1:loss   0:tie   1:win
                             if (!pHand.isBust()) {
                                 if (pHand.isCharlie()) {
                                     n = 1;
-                                } else if (pHand.isBlackjack() && player[w].getPlayers().size() == 1) {
+                                } else if (pHand.isBlackjack() && allP.p(w).getPlayers().size() == 1) {
                                     if (dHand.isBlackjack()) {
                                         n = 0;
                                     } else {
-                                        player[w].earn(0.5 * player[w].getBet());
+                                        allP.p(w).earn(0.5 * allP.p(w).getBet());
                                         n = 1;
                                     }
                                 } else if (pHand.getVal() > dHand.getVal()) {
@@ -524,36 +304,31 @@ public class GameGUI {
                                 n = -1;
                             }
 
-                            double mult = player[w].getPlayers().get(i).isDoubled() ? 2.0 : 1.0;
+                            double mult = allP.p(w).getPlayers().get(i).isDoubled() ? 2.0 : 1.0;
                             if (n != -1) {
                                 if (n == 1) {
                                     mult *= 2;
                                 }
-                                player[w].earn(mult * player[w].getBet());
+                                allP.p(w).earn(mult * allP.p(w).getBet());
                             }
                         }
                     }
                 }
 
-                for(int w = 0; w < NUM_PLAYERS; w++) {
-                    System.out.println("Money: " + player[w].getMoney());
-                    pvars[w].textMoney.setText(String.valueOf(player[w].getMoney()));
-                    System.out.println(strPlayer[w]);
-                    pvars[w].playerCardClips = player[w].createCardClips();
-                    pvars[w].labelPlayerCards.setIcon(new ImageIcon(joinCards(pvars[w].playerCardClips)));
+                allP.updateTextMoney();
+                allP.updateCards();
+                dealer.updateDealerCardClips(!allP.notAllPlayersBust());
+                for(int w = 0; w < allP.numP(); w++) {
+                    writeLog("Player "+w+" Money: "+allP.p(w).getMoney());
+                    writeLog(strPlayer[w]);
                 }
-                System.out.println("dealer: " + dealer.getHand());
-                dealerCardClips.clear();
-                dealerCardClips.add(dealer.createCardClips(!notAllPlayersBust(NUM_PLAYERS-1)));
-                labelDealerCards.setIcon(new ImageIcon(joinCards(dealerCardClips)));
+                writeLog("dealer: " + dealer.getHand());
                 again = false;
             }
-            for(int q = 0; q < NUM_PLAYERS; q++) {
-                if(player[q].getMoney() <= 0) player[q].setBankrupt(true);
-            }
+            allP.updateBankrupt();
         }
-        System.out.println("You've gone bankrupt!");
-        System.out.println("GAMEOVER");
+        writeLog("You've gone bankrupt!");
+        writeLog("GAMEOVER");
         System.exit(0);
     }
 }

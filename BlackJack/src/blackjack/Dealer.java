@@ -13,19 +13,28 @@ import java.util.ArrayList;
  * @author ethan
  */
 public class Dealer {
-    private Hand hand = new Hand();
-    private boolean active = true;
+    private Hand hand;
+    private boolean active;
     public Hand getHand() { return hand; }
     public void resetHand() { hand = new Hand(); }
-    public void reset() {
-        resetHand();
+    public void nextRound() {
         active = true;
+        resetHand();
     }
     public boolean isActive() { return active; }
-    public void setActive(boolean b) { active = b; }
+    
+    public void updateActivity() {
+        if(hand.isCharlie() ||
+          hand.isBust() ||
+          hand.isBlackjack() ||
+          hand.getVal() >= 17) {
+            active = false;
+        }
+    }
     
     public Dealer() {
-        
+        active = true;
+        hand  = new Hand();
     }
     @Override
     public String toString() {

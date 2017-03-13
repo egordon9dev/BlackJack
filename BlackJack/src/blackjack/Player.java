@@ -11,8 +11,8 @@ import java.awt.image.BufferedImage;
  * @author ethan
  */
 public class Player{
-    private double money = 0.0;
-    private double bet = 0.0;
+    protected double money = 0.0;
+    protected double bet = 0.0;
     private double insBet = 0.0;
     private int focusedPlayer = 0;
     private boolean bankrupt = false;
@@ -26,30 +26,32 @@ public class Player{
     public void setInsBet(double n) { insBet = n; }
     public int getFocusedPlayer() { return focusedPlayer; }
     
-    public void updateFocusedPlayer() {
-        int ctr = 0;
-        while( ctr <= players.size() &&
-         (players.get(focusedPlayer).isStanding() ||
-         players.get(focusedPlayer).getHand().isCharlie() ||
-         players.get(focusedPlayer).getHand().isBust()) ||
-         !players.get(focusedPlayer).isActive()) {
-            ctr++;
+    public void updateActivity() {
+        for(PartialPlayer p : players) {
+            if(p.isStanding() || p.getHand().isCharlie() || p.getHand().isBust() ||
+               players.get(focusedPlayer).getHand().isBlackjack() && players.size() == 1) {
+                p.setActive(false);
+            }
+        }
+    }
+    
+    public void incFocusedPlayer() {
+        if(!isActive()) {
+            GameGUI.getAllP().incPlayerUp();
+            return;
+        }
+        //updateActivity();
+        while(true) {
             focusedPlayer++;
             if(focusedPlayer >= players.size()) {
                 focusedPlayer = 0;
-                GameGUI.incPlayerUp();
+                GameGUI.getAllP().incPlayerUp();
+                break;
             }
+            if(players.get(focusedPlayer).isActive()) break;
         }
-        
     }
-    public void incFocusedPlayer() {
-        focusedPlayer++;
-        if(focusedPlayer >= players.size()) {
-            focusedPlayer = 0;
-            GameGUI.incPlayerUp();
-        }
-        updateFocusedPlayer();
-    }
+    
     public void earn(double earnings) { money += earnings; }
     public void betMoney(double n) {
         money -= n;
@@ -78,12 +80,6 @@ public class Player{
     
     public void drawCard(Card c) {
         players.get(focusedPlayer).getHand().drawCard(c);
-        if (  (players.get(focusedPlayer).getHand().isBlackjack() && players.size() == 1) ||
-              (players.get(focusedPlayer).isStanding())  ||
-              (players.get(focusedPlayer).getHand().isCharlie()) ||
-              (players.get(focusedPlayer).getHand().isBust())   ){
-            players.get(0).setActive(false);
-        }
     }
     
     public Player(double money) {

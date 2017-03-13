@@ -24,7 +24,7 @@ public class Deck {
             for(int j = 0; j < 4; j++) {
                 switch(j) {
                     case 0:
-                        cards.add(new Card(10, 10, Suit.hearts));
+                        cards.add(new Card(val, i, Suit.hearts));
                         break;
                     case 1:
                         cards.add(new Card(val, i, Suit.diamonds));
