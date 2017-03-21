@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package blackjack;
 
 import java.util.ArrayList;
@@ -15,8 +10,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- *
- * @author ethan
+ * @author Ethan Gordon
  */
 
 public class GameGUI {
@@ -24,18 +18,28 @@ public class GameGUI {
     public static BufferedImage cardSheet;
     private static JButton butHit, butStand, butDouble, butAgain, butSplit;
     private static boolean again = true;
+    private static JTextArea textResult;
     
     private static GraphicDealer dealer = new GraphicDealer();
     private static Shoe shoe = new Shoe(5);
 
     private static AllPlayers allP;
+    /**
+     * @return all players
+     */
     public static AllPlayers getAllP() { return allP; }
 
-    public static final boolean DEBUG_MODE = true;
+    public static final boolean DEBUG_MODE = false;
+    /**
+     * @param s
+     * prints text if in debug mode
+     */
     public static void writeLog(String s) {
         if(DEBUG_MODE) System.out.println(s);
     }
-    
+    /**
+     * setup main gui
+     */
     public static void setupGUI() {
         
         JFrame frame = new JFrame();
@@ -53,30 +57,49 @@ public class GameGUI {
         butSplit = new JButton("SPLIT");
         butAgain = new JButton("Again?");
         butHit.addActionListener(new ActionListener() {
+            /**
+             * makes player hit when button is pressed
+             * @param e 
+             */
             public void actionPerformed(ActionEvent e) {
-                allP.p().drawCard(shoe.drawCard());
-                allP.update();
-                if(!allP.p().getPlayers().get(allP.p().getFocusedPlayer()).isActive()) allP.p().incFocusedPlayer();
+                if(allP.isMoneySet()) {
+                    allP.p().drawCard(shoe.drawCard());
+                    allP.update();
+                    if(!allP.p().getPlayers().get(allP.p().getFocusedPlayer()).isActive()) allP.p().incFocusedPlayer();
+                }
             }
         });
         butDouble.addActionListener(new ActionListener() {
+            /**
+             * makes player double down when button is pressed
+             * @param e 
+             */
             public void actionPerformed(ActionEvent e) {
-                PartialPlayer pp = allP.p().getPlayers().get(allP.p().getFocusedPlayer());
-                pp.setDoubled();
-                allP.p().betMoney(allP.p().getBet());
-                pp.setStanding(true);
-                allP.p().drawCard(shoe.drawCard());
-                allP.update();
-                if(!allP.p().getPlayers().get(allP.p().getFocusedPlayer()).isActive()) allP.p().incFocusedPlayer();
+                if(allP.isMoneySet() && allP.p().getPlayers().size() == 1 &&
+                 allP.p().getPlayers().get(allP.p().getFocusedPlayer()).getHand().getCards().size() == 2 &&
+                 allP.p().getMoney() >= allP.p().getBet()) {
+                    PartialPlayer pp = allP.p().getPlayers().get(allP.p().getFocusedPlayer());
+                    pp.setDoubled();
+                    allP.p().betMoney(allP.p().getBet());
+                    pp.setStanding(true);
+                    allP.p().drawCard(shoe.drawCard());
+                    allP.update();
+                    if(!allP.p().getPlayers().get(allP.p().getFocusedPlayer()).isActive()) allP.p().incFocusedPlayer();
+                }
             }
         });
         butSplit.addActionListener(new ActionListener() {
+            /**
+             * makes player split when button is pressed
+             * @param e 
+             */
             public void actionPerformed(ActionEvent e) {
                 int fp = allP.p().getFocusedPlayer();
                 Hand hand0 = allP.p().getPlayers().get(fp).getHand();
                 //if it's splitable and if no cards have been added since it's been updated
                 //to being splitable - making sure it's still splitable
-                if (hand0.isSplitable() && hand0.getCards().size() == 2
+                if (allP.isMoneySet() && 
+                        hand0.isSplitable() && hand0.getCards().size() == 2
                         && allP.p().getMoney() >= allP.p().getBet()) {
                     allP.p().getPlayers().add(fp + 1, new PartialPlayer());
                     ArrayList<Card> cards0 = hand0.getCards();
@@ -88,13 +111,23 @@ public class GameGUI {
             }
         });
         butStand.addActionListener(new ActionListener() {
+            /**
+             * makes player stand when button is pressed
+             * @param e 
+             */
             public void actionPerformed(ActionEvent e) {
-                allP.p().getPlayers().get(allP.p().getFocusedPlayer()).setStanding(true);
-                allP.update();
-                if(!allP.p().getPlayers().get(allP.p().getFocusedPlayer()).isActive()) allP.p().incFocusedPlayer();
+                if(allP.isMoneySet()) {
+                    allP.p().getPlayers().get(allP.p().getFocusedPlayer()).setStanding(true);
+                    allP.update();
+                    if(!allP.p().getPlayers().get(allP.p().getFocusedPlayer()).isActive()) allP.p().incFocusedPlayer();
+                }
             }
         });
         butAgain.addActionListener(new ActionListener() {
+            /**
+             * runs main loop again to start a new round
+             * @param e 
+             */
             public void actionPerformed(ActionEvent e) {
                 again = true;
             }
@@ -118,10 +151,19 @@ public class GameGUI {
         south.add(butStand);
         panel.add(south, BorderLayout.SOUTH);
 
+        SubPanel eastPanel = new SubPanel(new BorderLayout());
         butAgain.setBackground(MainPanel.color);
         butAgain.setBorder(BorderFactory.createLineBorder(new Color(51, 140, 37), 1));
-        butAgain.setPreferredSize(new Dimension(100, 50));
-        panel.add(butAgain, BorderLayout.EAST);
+        butAgain.setPreferredSize(new Dimension(80, 160));
+        textResult = new JTextArea(10, 5);
+        textResult.setFocusable(false);
+        textResult.setText("");
+        textResult.setBackground(MainPanel.color);
+        textResult.setBorder(BorderFactory.createLineBorder(MainPanel.color));
+        eastPanel.add(textResult, BorderLayout.NORTH);
+        eastPanel.add(butAgain, BorderLayout.SOUTH);
+        eastPanel.setBackground(MainPanel.color);
+        panel.add(eastPanel, BorderLayout.EAST);
 
         
         try {
@@ -148,7 +190,7 @@ public class GameGUI {
         westBox.add(wb1);
         westBox.add(wb2);
         panel.add(westBox, BorderLayout.WEST);
-
+        
         frame.add(panel);
         frame.setSize(800, 650);
         frame.setResizable(false);
@@ -159,16 +201,23 @@ public class GameGUI {
         frame.requestFocus();
 
         EventQueue.invokeLater(new Runnable() {
+            /**
+             * repeatedly updates screen
+             */
             @Override
             public void run() {
                 frame.setVisible(true);
             }
         });
     }
+    /**
+     * resets gui
+     */
     public static void resetGUI() {
         butAgain.setBackground(MainPanel.color);
         butAgain.setBorder(BorderFactory.createLineBorder(MainPanel.color));
         butAgain.setText("");
+        textResult.setText("");
         for(int i = 0; i < allP.numP(); i++) {
             allP.p(i).getLabelPlayerCards().setIcon(new ImageIcon(
                     new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB)));
@@ -178,6 +227,12 @@ public class GameGUI {
         dealer.getLabelDealerCards().setIcon(new ImageIcon(
             new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB)));
     }
+    /**
+     * joins several images into one image in a way that represents which card
+     * goes with which hand
+     * @param imgs seperate images
+     * @return combined image
+     */
     public static BufferedImage joinCards(ArrayList<ArrayList<BufferedImage>> imgs) {
         if(imgs.get(0).isEmpty()) return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         //trim list
@@ -210,15 +265,20 @@ public class GameGUI {
         g2.dispose();
         return newImage;
     }
-    
+    /**
+     * main code with main loop
+     * @param args 
+     */
     public static void main(String args[]) {
         allP = new AllPlayers(4);
         setupGUI();
-
+        while(!allP.isMoneySet()) {}
         while (!allP.allPlayersBankrupt()) {
             for(int i = 0; i < allP.numP(); i++) writeLog("Player "+i+" Money: "+allP.p(i).getMoney());
+            
             allP.updateTextMoney();
             if (again) {
+                
                 resetGUI();
                 dealer.nextRound();
                 allP.nextRound();
@@ -228,11 +288,14 @@ public class GameGUI {
                 
                 String strPlayer[] = new String[allP.numP()];
 
-                
+                allP.updateCards();
+                dealer.updateDealerCardClips(true);
+                dealer.getLabelDealer().setText("Dealer:");
                 while (!allP.allPlayersNotActive()) {
-                    allP.update();
-                    dealer.getLabelDealer().setText("Dealer:");
                     Hand dealerHand = dealer.getHand();
+                    //this blocks untill valid insurance bets are recieved
+                    if(dealerHand.getCards().get(1).getID() == 1) allP.updateInsBet();
+                    allP.update();
                     //dealer bust
                     if (dealerHand.getVal() > 21 || dealerHand.isCharlie()) break;
                     //update player and dealer cards in gui
@@ -242,8 +305,6 @@ public class GameGUI {
                         writeLog("dealer: " + dealer);
                     }
                     dealer.updateDealerCardClips(true);
-                    //this blocks untill valid insurance bets are recieved
-                    if(dealerHand.getCards().get(1).getID() == 1) allP.updateInsBet();
                     //dealer blackjack
                     if (dealerHand.isBlackjack()) {
                         if(DEBUG_MODE) writeLog("dealer has a blackjack!");
@@ -262,6 +323,13 @@ public class GameGUI {
                 butAgain.setBorder(BorderFactory.createLineBorder(new Color(51, 140, 37), 1));
                 butAgain.setText("AGAIN?");
                 Hand dHand = dealer.getHand();
+                ArrayList<Integer> result[] = new ArrayList[allP.numP()];
+                for(int w = 0; w < allP.numP(); w++) {
+                    result[w] = new ArrayList<Integer>();
+                    for(int q = 0; q < allP.p(w).getPlayers().size(); q++) {
+                        result[w].add(-2);
+                    }
+                }
                 if (dHand.isBlackjack()) {
                     for(int w = 0; w < allP.numP(); w++) {
                         allP.p(w).earn(3.0 * allP.p(w).getInsBet());
@@ -273,8 +341,10 @@ public class GameGUI {
                             double mult = allP.p(w).getPlayers().get(i).isDoubled() ? 2.0 : 1.0;
                             if (allP.p(w).getPlayers().get(i).getHand().isBust()) {
                                 allP.p(w).earn(mult * allP.p(w).getBet());
+                                result[w].set(i, 0);
                             } else {
                                 allP.p(w).earn(mult * 2.0 * allP.p(w).getBet());
+                                result[w].set(i, 1);
                             }
                         }
                     }
@@ -282,31 +352,30 @@ public class GameGUI {
                     for(int w = 0; w < allP.numP(); w++) {
                         for (int i = 0; i < allP.p(w).getPlayers().size(); i++) {
                             Hand pHand = allP.p(w).getPlayers().get(i).getHand();
-                            int n = -2; // -1:loss   0:tie   1:win
                             if (!pHand.isBust()) {
                                 if (pHand.isCharlie()) {
-                                    n = 1;
+                                    result[w].set(i, 1);
                                 } else if (pHand.isBlackjack() && allP.p(w).getPlayers().size() == 1) {
                                     if (dHand.isBlackjack()) {
-                                        n = 0;
+                                        result[w].set(i, 0);
                                     } else {
                                         allP.p(w).earn(0.5 * allP.p(w).getBet());
-                                        n = 1;
+                                        result[w].set(i, 1);
                                     }
                                 } else if (pHand.getVal() > dHand.getVal()) {
-                                    n = 1;
+                                    result[w].set(i, 1);
                                 } else if (pHand.getVal() == dHand.getVal()) {
-                                    n = 0;
+                                    result[w].set(i, 0);
                                 } else {
-                                    n = -1;
+                                    result[w].set(i, -1);
                                 }
                             } else {
-                                n = -1;
+                                result[w].set(i, -1);
                             }
 
                             double mult = allP.p(w).getPlayers().get(i).isDoubled() ? 2.0 : 1.0;
-                            if (n != -1) {
-                                if (n == 1) {
+                            if (!result[w].get(i).equals(-1)) {
+                                if (result[w].get(i).equals(1)) {
                                     mult *= 2;
                                 }
                                 allP.p(w).earn(mult * allP.p(w).getBet());
@@ -314,7 +383,26 @@ public class GameGUI {
                         }
                     }
                 }
-
+                String sr = "";
+                for(int w = 0; w < result.length; w++) {
+                    for(int q = 0; q < result[w].size(); q++) {
+                        sr += "Player "+ w+"."+q +": ";
+                        switch(result[w].get(q)) {
+                            case -1:
+                                sr+="loss\n";
+                                break;
+                            case 0:
+                                sr+="push\n";
+                                break;
+                            case 1:
+                                sr+="win\n";
+                                break;
+                        }
+                        sr += "\n";
+                    }
+                }
+                textResult.setText(sr);
+                
                 allP.updateTextMoney();
                 allP.updateCards();
                 dealer.updateDealerCardClips(!allP.notAllPlayersBust());
@@ -323,6 +411,7 @@ public class GameGUI {
                     writeLog(strPlayer[w]);
                 }
                 writeLog("dealer: " + dealer.getHand());
+                
                 again = false;
             }
             allP.updateBankrupt();

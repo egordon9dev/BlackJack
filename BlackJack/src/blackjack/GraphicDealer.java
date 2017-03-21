@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package blackjack;
 
 import static blackjack.GameGUI.joinCards;
@@ -13,20 +8,41 @@ import javax.swing.JLabel;
 
 /**
  *
- * @author ethan
+ * @author Ethan Gordon
  */
-public class GraphicDealer extends Dealer{
+public class GraphicDealer extends Dealer {
+
     private static ArrayList<ArrayList<BufferedImage>> dealerCardClips;
     private static JLabel labelDealerCards, labelDealer;
-    
-    public JLabel getLabelDealer() { return labelDealer; }
-    public JLabel getLabelDealerCards() { return labelDealerCards; }
-    
+
+    /**
+     * @return dealer label
+     */
+    public JLabel getLabelDealer() {
+        return labelDealer;
+    }
+
+    /**
+     * @return label with card image clips
+     */
+    public JLabel getLabelDealerCards() {
+        return labelDealerCards;
+    }
+
+    /**
+     * updates dealers card image clips
+     *
+     * @param b flag that signifies whether or not to hide the first card
+     */
     public void updateDealerCardClips(boolean b) {
         dealerCardClips.clear();
         dealerCardClips.add(createCardClips(b));
         labelDealerCards.setIcon(new ImageIcon(joinCards(dealerCardClips)));
     }
+
+    /**
+     * constructs a new GraphicDealer
+     */
     public GraphicDealer() {
         super();
         dealerCardClips = new ArrayList<ArrayList<BufferedImage>>();

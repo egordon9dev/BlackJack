@@ -1,28 +1,26 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package blackjack;
+
 import java.util.ArrayList;
+
 /**
- *
- * @author ethan
+ * @author Ethan Gordon
  */
 public class Deck {
+
     private ArrayList<Card> cards = new ArrayList<Card>();
-    
+
     /**
-     * declares new deck
-     * fills it with cards (un-shuffled)
+     * declares new deck and fills it with cards (un-shuffled)
      */
     public Deck() {
         int val;
-        for(int i = 1; i <= 13; i++) {
+        for (int i = 1; i <= 13; i++) {
             val = i;
-            if(val > 10) val = 10;
-            for(int j = 0; j < 4; j++) {
-                switch(j) {
+            if (val > 10) {
+                val = 10;
+            }
+            for (int j = 0; j < 4; j++) {
+                switch (j) {
                     case 0:
                         cards.add(new Card(val, i, Suit.hearts));
                         break;
@@ -39,9 +37,11 @@ public class Deck {
             }
         }
     }
-    
+
     /**
      * @return cards in deck
      */
-    public ArrayList<Card> getCards() { return cards; }
+    public ArrayList<Card> getCards() {
+        return cards;
+    }
 }

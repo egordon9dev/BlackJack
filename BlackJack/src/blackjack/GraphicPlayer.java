@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package blackjack;
 
 import static blackjack.GameGUI.joinCards;
@@ -20,11 +15,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
- *
- * @author ethan
+ * @author Ethan Gordon
  */
-public class GraphicPlayer extends Player{
-    
+public class GraphicPlayer extends Player {
+
     private final JPanel northPanel;
     private JPanel westPanel;
     private ArrayList<ArrayList<BufferedImage>> playerCardClips;
@@ -33,48 +27,116 @@ public class GraphicPlayer extends Player{
     private JTextField textMoney, textBet, textIns;
     private String strBet, strIns;
     private String strPlayer;
-    
-    public JPanel getNorthPanel() { return northPanel; }
-    public JPanel getWestPanel() { return westPanel; }
-    public JLabel getLabelPlayerCards() { return labelPlayerCards; }
-    public JLabel getLabelPlayer() { return labelPlayer; }
-    public String getStrBet() { return strBet; }
-    public String getStrIns() { return strIns; }
-    public String getStrPlayer() { return strPlayer; }
-    
-    public void setStrPlayer(String s) { strPlayer = s; }
-    
+    private boolean moneySet = false;
+
+    /**
+     * @return flag representing whether or not the money/bankroll has been set
+     */
+    public boolean isMoneySet() {
+        return moneySet;
+    }
+
+    /**
+     * @return north panel
+     */
+    public JPanel getNorthPanel() {
+        return northPanel;
+    }
+
+    /**
+     * @return west panel
+     */
+    public JPanel getWestPanel() {
+        return westPanel;
+    }
+
+    /**
+     * @return label with card image clips
+     */
+    public JLabel getLabelPlayerCards() {
+        return labelPlayerCards;
+    }
+
+    /**
+     * @return player label
+     */
+    public JLabel getLabelPlayer() {
+        return labelPlayer;
+    }
+
+    /**
+     * @return string bet
+     */
+    public String getStrBet() {
+        return strBet;
+    }
+
+    /**
+     * @return string insurance bet
+     */
+    public String getStrIns() {
+        return strIns;
+    }
+
+    /**
+     * @return string representation of player
+     */
+    public String getStrPlayer() {
+        return strPlayer;
+    }
+
+    /**
+     * sets string player
+     * @param s
+     */
+    public void setStrPlayer(String s) {
+        strPlayer = s;
+    }
+
+    /**
+     * sets up for the next round
+     */
     public void nextRound() {
         strBet = "";
         strIns = "";
         textBet.setText("");
         textIns.setText("");
     }
-    
+
+    /**
+     * updates bet
+     */
     public void updateBet() {
         while (true) {
             try {
-                double bet = Double.parseDouble(strBet);
-                if (bet > money || bet < 0.0) {
+                double dBet = Double.parseDouble(strBet);
+                if (dBet > money || dBet < 0.0) {
                     continue;
                 }
-                betMoney(bet);
-                setBet(bet);
+                betMoney(dBet);
+                setBet(dBet);
                 break;
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         }
     }
-    
+
+    /**
+     * updates money text field
+     */
     public void updateTextMoney() {
         textMoney.setText(String.valueOf(money));
     }
-    
+
+    /**
+     * updates insurance bet
+     */
     public void updateInsBet() {
-        double max = bet/2.0 < money ? bet/2.0 : money;       
+        double max = bet / 2.0 < money ? bet / 2.0 : money;
         while (true) {
             try {
                 Double d = 0.0;
-                if(!isBankrupt()) {
+                if (!isBankrupt()) {
                     d = Double.parseDouble(strIns);
                     if (d > max || d < 0.0) {
                         continue;
@@ -87,24 +149,30 @@ public class GraphicPlayer extends Player{
             }
         }
     }
-            
+
+    /**
+     * updates player card clips
+     */
     public void updatePlayerCardClips() {
         playerCardClips = createCardClips();
         labelPlayerCards.setIcon(new ImageIcon(joinCards(playerCardClips)));
     }
-    
-    public GraphicPlayer(double money) {
-        super(money);
-        
+
+    /**
+     * constructs new GraphicPlayer
+     */
+    public GraphicPlayer() {
+        super();
+
         strBet = "invalid";
         strIns = "invalid";
         textMoney = new JTextField(10);
+        textMoney.setFocusable(true);
         textBet = new JTextField(10);
         textIns = new JTextField(10);
         labelMoney = new JLabel("MONEY: ");
         labelBet = new JLabel("BET: ");
         labelIns = new JLabel("INSURANCE BET: ");
-        textMoney.setFocusable(false);
         textIns.setText("0");
         textMoney.setBackground(MainPanel.color);
         textMoney.setBorder(BorderFactory.createLineBorder(MainPanel.color));
@@ -117,18 +185,77 @@ public class GraphicPlayer extends Player{
         northPanel.add(textBet);
         northPanel.add(labelIns);
         northPanel.add(textIns);
-        
-        textBet.addFocusListener(new FocusListener() {
+
+        textMoney.addFocusListener(new FocusListener() {
+            /**
+             * does nothing
+             *
+             * @param fe
+             */
             @Override
             public void focusGained(FocusEvent fe) {
             }
 
+            /**
+             * updates stuff when user clicks away
+             *
+             * @param fe
+             */
+            @Override
+            public void focusLost(FocusEvent fe) {
+                try {
+                    money = Double.parseDouble(textMoney.getText());
+                } catch (Exception e) {
+                    return;
+                }
+                textMoney.setFocusable(false);
+                moneySet = true;
+            }
+        });
+        textMoney.addActionListener(new ActionListener() {
+            /**
+             * updates stuff when user hits [ENTER]
+             *
+             * @param ae
+             */
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                try {
+                    money = Double.parseDouble(textMoney.getText());
+                } catch (Exception e) {
+                    return;
+                }
+                textMoney.setFocusable(false);
+                moneySet = true;
+            }
+        });
+
+        textBet.addFocusListener(new FocusListener() {
+            /**
+             * does nothing
+             *
+             * @param fe
+             */
+            @Override
+            public void focusGained(FocusEvent fe) {
+            }
+
+            /**
+             * updates stuff when user clicks away
+             *
+             * @param fe
+             */
             @Override
             public void focusLost(FocusEvent fe) {
                 strBet = textBet.getText();
             }
         });
         textBet.addActionListener(new ActionListener() {
+            /**
+             * updates stuff when user hits [ENTER]
+             *
+             * @param ae
+             */
             @Override
             public void actionPerformed(ActionEvent ae) {
                 strBet = textBet.getText();
@@ -137,16 +264,31 @@ public class GraphicPlayer extends Player{
         textIns.setBackground(MainPanel.color);
         textIns.setBorder(BorderFactory.createLineBorder(MainPanel.color));
         textIns.addFocusListener(new FocusListener() {
+            /**
+             * does nothing
+             *
+             * @param fe
+             */
             @Override
             public void focusGained(FocusEvent fe) {
             }
 
+            /**
+             * updates stuff when user clicks away
+             *
+             * @param fe
+             */
             @Override
             public void focusLost(FocusEvent fe) {
                 strIns = textIns.getText();
             }
         });
         textIns.addActionListener(new ActionListener() {
+            /**
+             * updates stuff when user hits [ENTER]
+             *
+             * @param ae
+             */
             @Override
             public void actionPerformed(ActionEvent ae) {
                 strIns = textIns.getText();

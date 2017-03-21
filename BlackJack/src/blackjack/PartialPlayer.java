@@ -1,37 +1,90 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package blackjack;
 
 /**
- *
- * @author ethan
+ * @author Ethan Gordon
  */
 public class PartialPlayer {
+
     private boolean active;
     private boolean standing;
     private boolean doubled;
-    public boolean isDoubled() { return doubled; }
-    public void setDoubled() { doubled = true; }
-    public boolean isActive() { return active; }
-    public void setActive(boolean b) { active = b; }
-    public boolean isStanding() { return standing; }
-    public void setStanding(boolean b) { standing = b; }
-    
     private Hand hand;
-    public Hand getHand() { return hand; }
+
+    /**
+     * @return doubled flag
+     */
+    public boolean isDoubled() {
+        return doubled;
+    }
+
+    /**
+     * sets doubled flag to true
+     */
+    public void setDoubled() {
+        doubled = true;
+    }
+
+    /**
+     * @return active flag
+     */
+    public boolean isActive() {
+        return active;
+    }
+
+    /**
+     * sets active flag
+     *
+     * @param b
+     */
+    public void setActive(boolean b) {
+        active = b;
+    }
+
+    /**
+     * @return standing flag
+     */
+    public boolean isStanding() {
+        return standing;
+    }
+
+    /**
+     * sets standing flag
+     *
+     * @param b
+     */
+    public void setStanding(boolean b) {
+        standing = b;
+    }
+
+    /**
+     * @return hand
+     */
+    public Hand getHand() {
+        return hand;
+    }
+
+    /**
+     * sets hand
+     *
+     * @param hand
+     */
     public void setHand(Hand hand) {
         this.hand = hand;
     }
+
+    /**
+     * constructs new PartialPlayer
+     */
     public PartialPlayer() {
         hand = new Hand();
         standing = false;
         doubled = false;
         active = true;
     }
-    
+
+    /**
+     * @return string representation of this partial player's hand
+     */
     @Override
     public String toString() {
         return hand.toString();

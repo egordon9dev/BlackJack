@@ -1,17 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package blackjack;
 
 /**
- *
- * @author ethan
+ * @author Ethan Gordon
  */
 public class CardTester {
+    /**
+     * test card
+     * @param args 
+     */
     public static void main(String args[]) {
-        for(int i = 1; i <= 13; i++) {
+        for (int i = 1; i <= 13; i++) {
             int val = i > 10 ? 10 : i;
             System.out.println(new Card(val, i, Suit.spades));
             System.out.println(new Card(val, i, Suit.hearts));

@@ -1,99 +1,212 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package blackjack;
+
 import java.util.ArrayList;
 import java.awt.image.BufferedImage;
+
 /**
- *
- * @author ethan
+ * @author Ethan Gordon
  */
-public class Player{
+public class Player {
+    
     protected double money = 0.0;
     protected double bet = 0.0;
     private double insBet = 0.0;
     private int focusedPlayer = 0;
     private boolean bankrupt = false;
-    public void setBankrupt(boolean b) { bankrupt = b; }
-    public boolean isBankrupt() { return bankrupt; }
-    public double getMoney() { return money; }
-    public void setMoney(double money) { this.money = money; }
-    public double getBet() { return bet; }
-    public void setBet(double bet) { this.bet = bet; }
-    public double getInsBet() { return insBet; }
-    public void setInsBet(double n) { insBet = n; }
-    public int getFocusedPlayer() { return focusedPlayer; }
-    
+    private ArrayList<PartialPlayer> players = new ArrayList<PartialPlayer>();
+
+    /**
+     * sets bankrupt flag
+     *
+     * @param b
+     */
+    public void setBankrupt(boolean b) {
+        bankrupt = b;
+    }
+
+    /**
+     * @return bankrupt flag
+     */
+    public boolean isBankrupt() {
+        return bankrupt;
+    }
+
+    /**
+     * @return Money
+     */
+    public double getMoney() {
+        return money;
+    }
+
+    /**
+     * sets money flag
+     *
+     * @param money
+     */
+    public void setMoney(double money) {
+        this.money = money;
+    }
+
+    /**
+     * adds money to bankroll
+     *
+     * @param earnings
+     */
+    public void earn(double earnings) {
+        money += earnings;
+    }
+
+    /**
+     * subtracts money from bankroll
+     *
+     * @param n how much money to bet
+     */
+    public void betMoney(double n) {
+        money -= n;
+    }
+
+    /**
+     * @return bet
+     */
+    public double getBet() {
+        return bet;
+    }
+
+    /**
+     * sets bet
+     *
+     * @param bet
+     */
+    public void setBet(double bet) {
+        this.bet = bet;
+    }
+
+    /**
+     * @return insurance bet
+     */
+    public double getInsBet() {
+        return insBet;
+    }
+
+    /**
+     * sets insurance bet
+     *
+     * @param n
+     */
+    public void setInsBet(double n) {
+        insBet = n;
+    }
+
+    /**
+     * @return index of focused player
+     */
+    public int getFocusedPlayer() {
+        return focusedPlayer;
+    }
+
+    /**
+     * @return players
+     */
+    public ArrayList<PartialPlayer> getPlayers() {
+        return players;
+    }
+
+    /**
+     * draws a card to the focused player's hand
+     *
+     * @param c
+     */
+    public void drawCard(Card c) {
+        players.get(focusedPlayer).getHand().drawCard(c);
+    }
+
+    /**
+     * updates activity
+     */
     public void updateActivity() {
-        for(PartialPlayer p : players) {
-            if(p.isStanding() || p.getHand().isCharlie() || p.getHand().isBust() ||
-               players.get(focusedPlayer).getHand().isBlackjack() && players.size() == 1) {
+        for (PartialPlayer p : players) {
+            if (p.isStanding() || p.getHand().isCharlie() || p.getHand().isBust()
+                    || players.get(focusedPlayer).getHand().isBlackjack() && players.size() == 1) {
                 p.setActive(false);
             }
         }
     }
-    
+
+    /**
+     * increments focused player
+     */
     public void incFocusedPlayer() {
-        if(!isActive()) {
+        if (!isActive()) {
             GameGUI.getAllP().incPlayerUp();
             return;
         }
         //updateActivity();
-        while(true) {
+        while (true) {
             focusedPlayer++;
-            if(focusedPlayer >= players.size()) {
+            if (focusedPlayer >= players.size()) {
                 focusedPlayer = 0;
                 GameGUI.getAllP().incPlayerUp();
                 break;
             }
-            if(players.get(focusedPlayer).isActive()) break;
+            if (players.get(focusedPlayer).isActive()) {
+                break;
+            }
         }
     }
-    
-    public void earn(double earnings) { money += earnings; }
-    public void betMoney(double n) {
-        money -= n;
-    }
-    ArrayList<PartialPlayer> players = new ArrayList<PartialPlayer>();
-    public ArrayList<PartialPlayer> getPlayers() { return players; }
+
+    /**
+     * @return whether or not the player has busted
+     */
     public boolean isBust() {
-        for(PartialPlayer p : players) {
-            if(!p.getHand().isBust()) return false;
+        for (PartialPlayer p : players) {
+            if (!p.getHand().isBust()) {
+                return false;
+            }
         }
         return true;
     }
+
+    /**
+     * @return whether or not the player is active
+     */
     public boolean isActive() {
-        for(PartialPlayer p : players) {
-            if(p.isActive()) return true;
+        for (PartialPlayer p : players) {
+            if (p.isActive()) {
+                return true;
+            }
         }
         return false;
     }
+
+    /**
+     * reset the player
+     */
     public void reset() {
-        bet= 0.0;
+        bet = 0.0;
         insBet = 0.0;
         focusedPlayer = 0;
         players = new ArrayList<PartialPlayer>();
         players.add(new PartialPlayer());
     }
-    
-    public void drawCard(Card c) {
-        players.get(focusedPlayer).getHand().drawCard(c);
-    }
-    
-    public Player(double money) {
-        this.money = money;
+
+    /**
+     * create new player
+     */
+    public Player() {
         players.add(new PartialPlayer());
     }
+
+    /**
+     * @return separate images of each card as a clip from the sprite-sheet
+     */
     public ArrayList<ArrayList<BufferedImage>> createCardClips() {
         ArrayList<ArrayList<BufferedImage>> imgs = new ArrayList<ArrayList<BufferedImage>>();
-        for(int i = 0; i < players.size(); i++) {
+        for (int i = 0; i < players.size(); i++) {
             imgs.add(new ArrayList<BufferedImage>());
             ArrayList<Card> cards = players.get(i).getHand().getCards();
-            for(int j = 0; j < cards.size(); j++) {
+            for (int j = 0; j < cards.size(); j++) {
                 int n = -1;
-                switch(cards.get(j).getSuit()) {
+                switch (cards.get(j).getSuit()) {
                     case hearts:
                         n = 0;
                         break;
@@ -107,7 +220,7 @@ public class Player{
                         n = 3;
                         break;
                 }
-                imgs.get(i).add(GameGUI.cardSheet.getSubimage((cards.get(j).getID()-1)*44, n*63, 44, 63));
+                imgs.get(i).add(GameGUI.cardSheet.getSubimage((cards.get(j).getID() - 1) * 44, n * 63, 44, 63));
             }
         }
         return imgs;
