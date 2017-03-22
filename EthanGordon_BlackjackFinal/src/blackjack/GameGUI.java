@@ -61,7 +61,9 @@ public class GameGUI {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
-                    allP = new AllPlayers(Integer.parseInt(textNumPlayers.getText()));
+                    int n = Integer.parseInt(textNumPlayers.getText());
+                    if(n < 1 || n > 7) return;
+                    allP = new AllPlayers(n);
                     mainFrame.setSize(800, 650);
                     layout.show(mainPanel, GAME_PANEL);
                     started = true;
