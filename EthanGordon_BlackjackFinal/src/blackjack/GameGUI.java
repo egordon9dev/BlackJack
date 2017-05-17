@@ -83,8 +83,8 @@ public class GameGUI {
         gamePanel = new MainPanel();
         layout = new CardLayout();
         mainPanel.setLayout(layout);
-        mainPanel.add(startPanel, START_PANEL);
         mainPanel.add(gamePanel, GAME_PANEL);
+        mainPanel.add(startPanel, START_PANEL);
         layout.show(mainPanel, START_PANEL);
         mainFrame.add(mainPanel);
         
