@@ -1,2 +1,2 @@
 # BlackJack
-This is my Blackjack game project for AP Compsci
+A Blackjack game implimentation with a GUI 
